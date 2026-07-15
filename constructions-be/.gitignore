@@ -1,0 +1,9 @@
+node_modules/
+public/
+uploads/
+routes_mysql/
+.env
+.env.*
+!.env.example
+_dump_local.sql
+Bathroom.glb

@@ -1,0 +1,24 @@
+# Old backup folders — not part of the current codebase
+construction-frnted-old-bk2/
+constructions-fe-old-bk/
+playwright-tests/
+
+# Postgres dumps
+dump-postgres-*.sql
+_dump_local.sql
+*.dump
+
+# Claude Code metadata
+.claude/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node — belt & suspenders (subdir gitignores already cover this)
+**/node_modules/

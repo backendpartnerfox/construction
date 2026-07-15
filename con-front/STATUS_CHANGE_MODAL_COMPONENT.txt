@@ -1,0 +1,144 @@
+// Status Change Modal Component - ADD THIS TO ProjectCosting.js before export default
+
+const StatusChangeModal = ({ material, action, onClose, onSuccess, API_URL }) => {
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const isApprove = action === 'approve';
+  const title = isApprove ? 'Approve Material Cost' : 'Reject Material Cost';
+  const buttonText = isApprove ? 'Approve' : 'Reject';
+  const buttonColor = isApprove ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!isApprove && (!notes || notes.trim() === '')) {
+      alert('Please provide a reason for rejection');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const endpoint = isApprove ? 'approve' : 'reject';
+      const payload = {
+        [isApprove ? 'approved_by' : 'rejected_by']: 1, // TODO: Get from auth context
+        [isApprove ? 'approval_notes' : 'rejection_reason']: notes
+      };
+
+      await axios.put(
+        `${API_URL}/api/project-costing/materials/${material.costing_id}/${endpoint}`,
+        payload
+      );
+
+      alert(`Material cost ${isApprove ? 'approved' : 'rejected'} successfully!`);
+      onSuccess();
+    } catch (error) {
+      console.error(`Error ${action}ing material:`, error);
+      alert(`Error ${action}ing material cost: ${error.response?.data?.details || error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2
+    }).format(amount || 0);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-lg w-full">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            <p className="text-sm text-gray-500 mt-1">Material ID: {material.costing_id}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Material Details Summary */}
+          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Item:</span>
+              <span className="font-medium text-gray-900">{material.item_name}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Vendor:</span>
+              <span className="font-medium text-gray-900">{material.vendor_name}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Quantity:</span>
+              <span className="font-medium text-gray-900">{material.boq_quantity} {material.unit}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Total Amount:</span>
+              <span className="font-bold text-orange-600">{formatCurrency(material.total_amount)}</span>
+            </div>
+          </div>
+
+          {/* Notes/Reason */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {isApprove ? 'Approval Notes (Optional)' : 'Rejection Reason'}
+              {!isApprove && <span className="text-red-500">*</span>}
+            </label>
+            <textarea
+              required={!isApprove}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              placeholder={isApprove ? 'Add any notes about this approval...' : 'Please provide a reason for rejection...'}
+            />
+          </div>
+
+          {/* Warning for Rejection */}
+          {!isApprove && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start space-x-2">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-red-800">
+                <p className="font-medium">This action will reject the material cost</p>
+                <p className="mt-1">The vendor may need to be notified about this decision.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`px-4 py-2 text-white rounded-lg disabled:bg-gray-400 flex items-center space-x-2 ${buttonColor}`}
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  {isApprove ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                  <span>{buttonText}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};

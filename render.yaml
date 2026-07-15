@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: constructions-be
+    env: node
+    plan: free
+    region: singapore   # closest to Hyderabad; change to oregon/ohio/frankfurt as needed
+    rootDir: constructions-be   # monorepo — backend lives here
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api-docs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # DB connection — set these to your Neon (or other) Postgres values in Render dashboard
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PORT
+        value: 5432
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_SCHEMA
+        value: public
+      # Auth
+      - key: JWT_SECRET
+        generateValue: true    # Render will generate a strong random value
+      # Frontend origin(s) allowed to call this API
+      - key: ALLOWED_ORIGINS
+        sync: false            # e.g. https://myapp.netlify.app
+      # Razorpay (leave empty until you have keys)
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false

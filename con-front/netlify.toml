@@ -1,0 +1,16 @@
+[build]
+  base = "."
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  # CRA reads env vars at build time — set REACT_APP_API_URL in Netlify dashboard,
+  # not here (this file is committed). CI defaults to false so warnings don't fail build.
+  CI = "false"
+  NODE_VERSION = "18"
+
+# SPA client-side routing: send everything to index.html except real assets.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

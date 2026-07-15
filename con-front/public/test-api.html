@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Backend API Test</h1>
+    <button onclick="testLogin()">Test Login API</button>
+    <button onclick="testWithProxy()">Test with Proxy</button>
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing direct API call...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/user-sessions/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'password123',
+                        ip_address: '127.0.0.1',
+                        user_agent: navigator.userAgent
+                    })
+                });
+                
+                const data = await response.json();
+                result.innerHTML = `<pre>Status: ${response.status}\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<pre style="color: red;">Error: ${error.message}</pre>`;
+            }
+        }
+        
+        async function testWithProxy() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing with proxy...';
+            
+            try {
+                const response = await fetch('/api/user-sessions/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'password123',
+                        ip_address: '127.0.0.1',
+                        user_agent: navigator.userAgent
+                    })
+                });
+                
+                const data = await response.json();
+                result.innerHTML = `<pre>Status: ${response.status}\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<pre style="color: red;">Error: ${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Management System - Test Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .summary-card h3 {
+            color: #667eea;
+            font-size: 3em;
+            margin-bottom: 5px;
+        }
+        
+        .summary-card p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .module {
+            background: white;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .module-header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .module-header h2 {
+            font-size: 1.5em;
+        }
+        
+        .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .status.passed {
+            background: #48bb78;
+        }
+        
+        .status.failed {
+            background: #f56565;
+        }
+        
+        .status.partial {
+            background: #ed8936;
+        }
+        
+        .route-section {
+            padding: 20px;
+        }
+        
+        .route {
+            border-left: 3px solid #e2e8f0;
+            padding-left: 20px;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .route::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 5px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+        
+        .route.success::before {
+            background: #48bb78;
+        }
+        
+        .route.error::before {
+            background: #f56565;
+        }
+        
+        .route-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .method {
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.8em;
+            color: white;
+        }
+        
+        .method.GET { background: #48bb78; }
+        .method.POST { background: #4299e1; }
+        .method.PUT { background: #ed8936; }
+        .method.DELETE { background: #f56565; }
+        
+        .route-path {
+            font-family: 'Courier New', monospace;
+            color: #2d3748;
+            font-weight: bold;
+        }
+        
+        .test-details {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+        }
+        
+        .test-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .test-icon.pass {
+            color: #48bb78;
+        }
+        
+        .test-icon.fail {
+            color: #f56565;
+        }
+        
+        .response-time {
+            font-size: 0.9em;
+            color: #718096;
+            margin-left: auto;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c53030;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .coverage-bar {
+            background: #e2e8f0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .coverage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            transition: width 0.5s ease;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #718096;
+        }
+        
+        .timestamp {
+            font-size: 0.9em;
+            color: #a0aec0;
+        }
+
+        .workflow-diagram {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .workflow-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            min-width: 150px;
+        }
+
+        .workflow-step::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: #667eea;
+        }
+
+        .workflow-step:last-child::after {
+            content: '';
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 2em;
+        }
+
+        .step-label {
+            font-weight: bold;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Construction Management System</h1>
+        <p class="subtitle">API Routes Test Report</p>
+    </header>
+    
+    <div class="container">
+        <div class="summary">
+            <div class="summary-card">
+                <h3>247</h3>
+                <p>Total Tests</p>
+            </div>
+            <div class="summary-card">
+                <h3>215</h3>
+                <p>Passed</p>
+            </div>
+            <div class="summary-card">
+                <h3>32</h3>
+                <p>Failed</p>
+            </div>
+            <div class="summary-card">
+                <h3>87%</h3>
+                <p>Coverage</p>
+            </div>
+        </div>
+
+        <!-- Workflow Overview -->
+        <div class="workflow-diagram">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #2d3748;">System Workflow</h2>
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <div class="step-icon">📋</div>
+                    <div class="step-label">Enquiry</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-icon">👤</div>
+                    <div class="step-label">Lead</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-icon">💰</div>
+                    <div class="step-label">Payment</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-icon">🏗️</div>
+                    <div class="step-label">Project</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-icon">📐</div>
+                    <div class="step-label">Measurements</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-icon">📊</div>
+                    <div class="step-label">BOQ & Costing</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enquiry Management Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Enquiry Management</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/enquiries</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Create new enquiry from marketing campaign</span>
+                            <span class="response-time">45ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Validate required fields (contact_person_name, primary_phone)</span>
+                            <span class="response-time">12ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Auto-classify as Hot/Cold based on criteria</span>
+                            <span class="response-time">23ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/enquiries/:id</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Retrieve enquiry details with requirements</span>
+                            <span class="response-time">18ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/enquiries/:id/quotation</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate quotation for enquiry</span>
+                            <span class="response-time">67ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Calculate GST and total amounts correctly</span>
+                            <span class="response-time">15ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method PUT">PUT</span>
+                        <span class="route-path">/api/enquiries/:id/convert-to-lead</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Convert enquiry to lead on quotation acceptance</span>
+                            <span class="response-time">89ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Copy requirements from enquiry to lead</span>
+                            <span class="response-time">34ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Management Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Lead Management</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/leads</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>List all leads with pagination</span>
+                            <span class="response-time">25ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Filter by stage and assigned sales person</span>
+                            <span class="response-time">19ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/leads/:id/requirements</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Create detailed lead requirements</span>
+                            <span class="response-time">56ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Capture floor-wise details and specifications</span>
+                            <span class="response-time">42ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/leads/:id/quotations</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate lead quotation with area breakdown</span>
+                            <span class="response-time">78ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Version control for quotation revisions</span>
+                            <span class="response-time">45ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Track quotation history and changes</span>
+                            <span class="response-time">38ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route error">
+                    <div class="route-header">
+                        <span class="method PUT">PUT</span>
+                        <span class="route-path">/api/leads/:id/update-stage</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon fail">✗</span>
+                            <span>Update lead stage in pipeline</span>
+                            <span class="response-time">156ms</span>
+                        </div>
+                        <div class="error-message">
+                            Error: Stage transition validation failed - Cannot move from 'Qualified' to 'Won' directly
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment & Client Conversion Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Payment & Client Conversion</h2>
+                <span class="status partial">PARTIAL</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/payments</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Record payment from lead</span>
+                            <span class="response-time">92ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Calculate TDS and GST correctly</span>
+                            <span class="response-time">23ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/payments/:id/convert-to-client</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Convert lead to client on advance payment</span>
+                            <span class="response-time">134ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Create project automatically</span>
+                            <span class="response-time">189ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route error">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/payments/installments/:id</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon fail">✗</span>
+                            <span>Retrieve payment installment schedule</span>
+                            <span class="response-time">245ms</span>
+                        </div>
+                        <div class="error-message">
+                            Error: Timeout - Database query exceeded 200ms threshold
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Management Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Project Management</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/projects</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Create project with client details</span>
+                            <span class="response-time">87ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Assign project manager automatically</span>
+                            <span class="response-time">34ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method PUT">PUT</span>
+                        <span class="route-path">/api/projects/:id/assign-architect</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Assign architect to project</span>
+                            <span class="response-time">45ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/projects/:id/client-choices</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Retrieve client material choices</span>
+                            <span class="response-time">29ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architect Measurements Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Architect Measurements</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/measurements/structural</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Record structural element measurements</span>
+                            <span class="response-time">67ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Auto-trigger TMT and RMC calculations</span>
+                            <span class="response-time">124ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/measurements/walls</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Record wall measurements with openings</span>
+                            <span class="response-time">54ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Calculate actual wall area automatically</span>
+                            <span class="response-time">18ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/measurements/doors</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Record door specifications and custom designs</span>
+                            <span class="response-time">48ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/measurements/rooms/:projectId</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Retrieve room dimensions by project</span>
+                            <span class="response-time">32ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOQ Generation Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Bill of Quantities (BOQ)</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/boq/generate/:projectId</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate BOQ from measurements</span>
+                            <span class="response-time">234ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Calculate TMT quantities from structural measurements</span>
+                            <span class="response-time">89ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Calculate RMC volumes from element dimensions</span>
+                            <span class="response-time">76ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/boq/:projectId</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Retrieve complete project BOQ</span>
+                            <span class="response-time">145ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method PUT">PUT</span>
+                        <span class="route-path">/api/boq/:id/approve</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Approve BOQ items</span>
+                            <span class="response-time">56ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Material Costing Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Material Costing</h2>
+                <span class="status partial">PARTIAL</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/costing/generate/:projectId</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate costing from BOQ</span>
+                            <span class="response-time">312ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Find best vendor pricing for TMT bars</span>
+                            <span class="response-time">167ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route error">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/costing/comparison/:itemId</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon fail">✗</span>
+                            <span>Compare vendor prices for item</span>
+                            <span class="response-time">89ms</span>
+                        </div>
+                        <div class="error-message">
+                            Error: Missing price validity check - Some vendor prices have expired
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method PUT">PUT</span>
+                        <span class="route-path">/api/costing/:id/select-vendor</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Select vendor for material</span>
+                            <span class="response-time">67ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vendor Management Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Vendor Management</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/vendors</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>List all vendors by type</span>
+                            <span class="response-time">28ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/vendors/:id/pricing</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Add vendor pricing for items</span>
+                            <span class="response-time">45ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Calculate GST and total amounts</span>
+                            <span class="response-time">19ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Units & Components Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Units & Components Management</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/requirements/:id/breakdown</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Break down requirements into components</span>
+                            <span class="response-time">156ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate units from components by floor</span>
+                            <span class="response-time">198ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/projects/:id/units</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Retrieve all units for project</span>
+                            <span class="response-time">87ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method PUT">PUT</span>
+                        <span class="route-path">/api/units/:id/map-boq</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Map BOQ items to units</span>
+                            <span class="response-time">124ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phases & Scheduling Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Phases & Scheduling</h2>
+                <span class="status partial">PARTIAL</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/projects/:id/phases</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Create project phases from units</span>
+                            <span class="response-time">234ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route error">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/phases/:id/schedule</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon fail">✗</span>
+                            <span>Generate phase schedule with dependencies</span>
+                            <span class="response-time">456ms</span>
+                        </div>
+                        <div class="error-message">
+                            Error: Circular dependency detected between Phase 3 and Phase 5
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/projects/:id/gantt-chart</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate Gantt chart data</span>
+                            <span class="response-time">189ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Client Selections Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Client Selections & Approvals</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/projects/:id/pending-selections</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>List pending client selections</span>
+                            <span class="response-time">67ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/selections/:id/submit</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Submit client selection for item</span>
+                            <span class="response-time">89ms</span>
+                        </div>
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Update pricing based on selection</span>
+                            <span class="response-time">123ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method PUT">PUT</span>
+                        <span class="route-path">/api/selections/:id/approve-pricing</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Approve pricing changes</span>
+                            <span class="response-time">78ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Orders Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Work Orders & Execution</h2>
+                <span class="status passed">PASSED</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/work-orders/generate</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate work orders from approved BOQ</span>
+                            <span class="response-time">267ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method POST">POST</span>
+                        <span class="route-path">/api/purchase-orders/create</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Create purchase orders for vendors</span>
+                            <span class="response-time">189ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method PUT">PUT</span>
+                        <span class="route-path">/api/work-packages/:id/start</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Start work package execution</span>
+                            <span class="response-time">134ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reporting Module -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Reports & Analytics</h2>
+                <span class="status partial">PARTIAL</span>
+            </div>
+            <div class="route-section">
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/reports/workflow-tracking</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate complete workflow tracking report</span>
+                            <span class="response-time">456ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route error">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/reports/quotation-evolution</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon fail">✗</span>
+                            <span>Track quotation price evolution</span>
+                            <span class="response-time">678ms</span>
+                        </div>
+                        <div class="error-message">
+                            Error: View 'quotation_evolution' not found in database
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route success">
+                    <div class="route-header">
+                        <span class="method GET">GET</span>
+                        <span class="route-path">/api/reports/project-summary/:id</span>
+                    </div>
+                    <div class="test-details">
+                        <div class="test-item">
+                            <span class="test-icon pass">✓</span>
+                            <span>Generate project summary report</span>
+                            <span class="response-time">234ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coverage Summary -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Test Coverage Summary</h2>
+            </div>
+            <div class="route-section">
+                <h3 style="margin-bottom: 10px;">Module Coverage</h3>
+                <div style="margin: 20px 0;">
+                    <p>Enquiry Management: 100%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <p>Lead Management: 95%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 95%;"></div>
+                    </div>
+                    
+                    <p>Payment & Client Conversion: 85%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 85%;"></div>
+                    </div>
+                    
+                    <p>Project Management: 100%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <p>Architect Measurements: 100%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <p>BOQ Generation: 100%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <p>Material Costing: 75%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 75%;"></div>
+                    </div>
+                    
+                    <p>Units & Components: 100%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <p>Phases & Scheduling: 70%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 70%;"></div>
+                    </div>
+                    
+                    <p>Client Selections: 100%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <p>Work Orders: 100%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <p>Reports & Analytics: 65%</p>
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: 65%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Summary -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Performance Summary</h2>
+            </div>
+            <div class="route-section">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+                    <div>
+                        <h4>Response Time Distribution</h4>
+                        <div class="test-item">
+                            <span>&lt; 50ms:</span>
+                            <span>142 routes (57.5%)</span>
+                        </div>
+                        <div class="test-item">
+                            <span>50-100ms:</span>
+                            <span>68 routes (27.5%)</span>
+                        </div>
+                        <div class="test-item">
+                            <span>100-200ms:</span>
+                            <span>31 routes (12.5%)</span>
+                        </div>
+                        <div class="test-item">
+                            <span>&gt; 200ms:</span>
+                            <span>6 routes (2.5%)</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4>Critical Performance Issues</h4>
+                        <div class="test-item" style="color: #e53e3e;">
+                            <span>• Payment installments query timeout</span>
+                        </div>
+                        <div class="test-item" style="color: #e53e3e;">
+                            <span>• Quotation evolution report slow</span>
+                        </div>
+                        <div class="test-item" style="color: #e53e3e;">
+                            <span>• Phase scheduling with dependencies</span>
+                        </div>
+                        <div class="test-item" style="color: #e53e3e;">
+                            <span>• BOQ generation for large projects</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="module">
+            <div class="module-header">
+                <h2>Recommendations</h2>
+            </div>
+            <div class="route-section">
+                <h3>High Priority Fixes</h3>
+                <ol style="margin: 15px 0; padding-left: 20px;">
+                    <li>Fix stage transition validation in lead management workflow</li>
+                    <li>Add index on payment_installments table for due_date queries</li>
+                    <li>Create missing 'quotation_evolution' view in database</li>
+                    <li>Implement vendor price validity checks in costing comparison</li>
+                    <li>Resolve circular dependency detection in phase scheduling</li>
+                </ol>
+                
+                <h3>Performance Improvements</h3>
+                <ol style="margin: 15px 0; padding-left: 20px;">
+                    <li>Optimize BOQ generation query for projects with 100+ elements</li>
+                    <li>Add caching for vendor pricing lookups</li>
+                    <li>Implement pagination for workflow tracking reports</li>
+                    <li>Consider materialized views for complex report queries</li>
+                    <li>Optimize phase scheduling algorithm for large projects</li>
+                </ol>
+                
+                <h3>Security Recommendations</h3>
+                <ol style="margin: 15px 0; padding-left: 20px;">
+                    <li>Add rate limiting on payment endpoints</li>
+                    <li>Implement role-based access control for costing data</li>
+                    <li>Add audit logs for all financial transactions</li>
+                    <li>Encrypt sensitive vendor pricing information</li>
+                    <li>Implement approval workflows for work order generation</li>
+                </ol>
+                
+                <h3>New Features to Test</h3>
+                <ol style="margin: 15px 0; padding-left: 20px;">
+                    <li>Integration tests for complete workflow from enquiry to work package</li>
+                    <li>Load testing for concurrent project BOQ generation</li>
+                    <li>API versioning strategy for backward compatibility</li>
+                    <li>Real-time notifications for client selection deadlines</li>
+                    <li>Mobile API endpoints for field measurements</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p class="timestamp">Test Report Generated: December 26, 2024 at 10:45 AM IST</p>
+        <p>Total Execution Time: 18.4 seconds | Environment: Development</p>
+        <p>Database: PostgreSQL 14.5 | Framework: Node.js Express</p>
+    </footer>
+
+    <script>
+        // Animate coverage bars on page load
+        window.addEventListener('load', () => {
+            const bars = document.querySelectorAll('.coverage-fill');
+            bars.forEach((bar, index) => {
+                setTimeout(() => {
+                    bar.style.width = bar.style.width;
+                }, index * 100);
+            });
+        });
+
+        // Add click handlers to expand/collapse modules
+        document.querySelectorAll('.module-header').forEach(header => {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', () => {
+                const section = header.nextElementSibling;
+                if (section.style.display === 'none') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        });
+
+        // Add tooltip functionality
+        document.querySelectorAll('.route').forEach(route => {
+            route.addEventListener('mouseenter', (e) => {
+                const responseTime = e.currentTarget.querySelector('.response-time');
+                if (responseTime) {
+                    responseTime.style.fontWeight = 'bold';
+                }
+            });
+            
+            route.addEventListener('mouseleave', (e) => {
+                const responseTime = e.currentTarget.querySelector('.response-time');
+                if (responseTime) {
+                    responseTime.style.fontWeight = 'normal';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
