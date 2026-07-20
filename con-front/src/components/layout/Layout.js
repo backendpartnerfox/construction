@@ -37,6 +37,7 @@ const Layout = ({ children }) => {
     
     { id: 'architect', label: 'Architect', icon: Target, path: '/architect', active: location.pathname === '/architect' },
     { id: 'packages', label: 'Packages', icon: Package, path: '/packages', active: location.pathname.startsWith('/packages') },
+    { id: 'quotations', label: 'Quotations', icon: FileText, path: '/quotations', active: location.pathname.startsWith('/quotations') },
     { id: 'workflow', label: 'Workflow', icon: Users, path: '/workflow', active: location.pathname === '/workflow' },
     { id: 'admin', label: 'Admin', icon: Settings, path: '/admin', active: location.pathname.startsWith('/admin') }
   ];

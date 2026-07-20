@@ -200,6 +200,39 @@ router.post('/', async (req, res) => {
 });
 
 // ============================================================
+// PACKAGE SPECIFICATIONS (grouped by section)
+// GET /api/packages/:id/specifications
+// ============================================================
+router.get('/:id/specifications', async (req, res) => {
+  const db = req.db;
+  const { id } = req.params;
+  try {
+    const r = await db.query(
+      `SELECT section, feature, spec_text, sort_order
+         FROM package_specifications
+         WHERE package_id = $1
+         ORDER BY sort_order`,
+      [id]
+    );
+    // Group by section preserving order
+    const grouped = [];
+    const bySection = new Map();
+    for (const row of r.rows) {
+      if (!bySection.has(row.section)) {
+        const s = { section: row.section, features: [] };
+        bySection.set(row.section, s);
+        grouped.push(s);
+      }
+      bySection.get(row.section).features.push({ feature: row.feature, spec_text: row.spec_text });
+    }
+    res.json(grouped);
+  } catch (err) {
+    console.error('[Packages] specifications error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================
 // COST BREAKDOWN PER SFT (static path — must come before /:id)
 // GET /api/packages/cost-breakdown?sft=1500&stilt=400
 // Returns per-package MEP cost/SFT, breakdown by category, and totals scaled by SFT.

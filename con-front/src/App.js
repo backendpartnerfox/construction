@@ -24,6 +24,9 @@ import ProjectDetails from './pages/projects/ProjectDetails';
 import Architect from './pages/architect/Architect';
 import Packages from './pages/packages/Packages';
 import PackageRateCards from './pages/packages/PackageRateCards';
+import CreateQuotation from './pages/quotations/CreateQuotation';
+import QuotationsList from './pages/quotations/QuotationsList';
+import QuotationDetail from './pages/quotations/QuotationDetail';
 import CreatePackage from './pages/packages/CreatePackage';
 import PackageDetails from './pages/packages/PackageDetails';
 import EditPackage from './pages/packages/EditPackage';
@@ -347,6 +350,39 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <PackageRateCards />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/quotations"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <QuotationsList />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/quotations/create"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreateQuotation />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/quotations/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <QuotationDetail />
                   </Layout>
                 </ProtectedRoute>
               }

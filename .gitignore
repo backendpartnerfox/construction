@@ -3,10 +3,11 @@ construction-frnted-old-bk2/
 constructions-fe-old-bk/
 playwright-tests/
 
-# Postgres dumps
-dump-postgres-*.sql
+# Postgres dumps (root-level only — database-construction/ is intentionally tracked)
+/dump-postgres-*.sql
 _dump_local.sql
 *.dump
+!database-construction/
 
 # Claude Code metadata
 .claude/

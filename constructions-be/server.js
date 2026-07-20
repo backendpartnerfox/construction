@@ -241,6 +241,7 @@ const boq_generation = require('./routes/boq_generation_route'); // ✅ Import B
 const project_costing = require('./routes/project_costing_route'); // ✅ Import Project Costing route
 const project_units = require('./routes/project_units_route'); // ✅ Import Project Units route
 const leadConversionRoute = require('./routes/lead_conversion_route'); // ✅ Lead → Client conversion with Razorpay
+const quotationBuilderRoute = require('./routes/quotation_builder_route'); // Brick&Bolt-style quotation builder
 
 // ✅ CRITICAL FIX: Global middleware for database injection - MUST be before all routes
 app.use((req, res, next) => {
@@ -318,6 +319,7 @@ app.use('/api/assign_to_project', assignToProjectRoute);
 app.use('/api/client_project_approval', clientProjectApprovalRoute);
 app.use('/api/client_quotation_history', clientQuotationHistoryRoute);
 app.use('/api/client_quotations', clientQuotationsRoute);
+app.use('/api/quotations', quotationBuilderRoute); // Brick&Bolt-style whole-house quotations
 app.use('/api/architect_project_drawing', architectProjectDrawingRoute);
 app.use('/api/packages', packagesRoute);
 app.use('/api/package_items_mapping', packageItemsMappingRoute);
