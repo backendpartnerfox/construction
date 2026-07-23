@@ -1,5 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
+
+const BCRYPT_ROUNDS = 10;
+const isBcryptHash = s => typeof s === 'string' && s.length === 60 && /^\$2[aby]\$/.test(s);
+async function hashIfPlain(pw) {
+  if (!pw) return pw;
+  if (isBcryptHash(pw)) return pw;
+  return bcrypt.hash(pw, BCRYPT_ROUNDS);
+}
 
 /**
  * @swagger
@@ -169,15 +178,17 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Insert user
+    // Hash the password with bcrypt before storing
+    const passwordHash = await hashIfPlain(password);
+
     const result = await db.query(
-      `INSERT INTO users (username, email, password, first_name, last_name, city_id, is_active) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+      `INSERT INTO users (username, email, password, first_name, last_name, city_id, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, username, email, first_name, last_name, city_id, is_active, created_at`,
       [
         username,
         email,
-        password, // In a real application, you would hash this password
+        passwordHash,
         first_name || null,
         last_name || null,
         city_id || null,
@@ -341,13 +352,14 @@ router.put('/:id/password', async (req, res) => {
   }
 
   try {
-    // In a real application, you would hash the password here
+    // Hash with bcrypt before storing
+    const passwordHash = await hashIfPlain(password);
     const result = await db.query(
-      `UPDATE users 
+      `UPDATE users
        SET password = $1
        WHERE id = $2
        RETURNING id`,
-      [password, id]
+      [passwordHash, id]
     );
 
     if (result.rowCount === 0) {

@@ -12,6 +12,22 @@ const router = express.Router();
  * Get all units for a project
  * GET /api/project_units?project_id=:projectId
  */
+// Convenience: same as the query-string version but takes projectId in path.
+router.get('/project/:projectId', async (req, res) => {
+  const db = req.db;
+  const { projectId } = req.params;
+  try {
+    const r = await db.query(
+      `SELECT * FROM project_units WHERE project_id = $1 ORDER BY unit_id`,
+      [projectId]
+    );
+    res.json(r.rows);
+  } catch (err) {
+    console.error('[project_units/project/:id] error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   const db = req.db;
   const { project_id } = req.query;

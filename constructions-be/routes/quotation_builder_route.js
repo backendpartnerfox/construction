@@ -159,6 +159,122 @@ router.get('/site-conditions', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+router.post('/site-conditions', async (req, res) => {
+  const { code, question, standard_answer, deviation_answer, triggers_rule_id, default_impact, sort_order } = req.body || {};
+  if (!code || !question || !standard_answer) return res.status(400).json({ error: 'code, question, standard_answer required' });
+  try {
+    const r = await req.db.query(
+      `INSERT INTO site_conditions_catalog (code, question, standard_answer, deviation_answer, triggers_rule_id, default_impact, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6, COALESCE($7, 999)) RETURNING *`,
+      [code, question, standard_answer, deviation_answer || null, triggers_rule_id || null, default_impact || null, sort_order]);
+    res.status(201).json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+router.put('/site-conditions/:id', async (req, res) => {
+  const { id } = req.params;
+  const { question, standard_answer, deviation_answer, triggers_rule_id, default_impact, sort_order } = req.body || {};
+  try {
+    const r = await req.db.query(
+      `UPDATE site_conditions_catalog
+         SET question = COALESCE($1, question), standard_answer = COALESCE($2, standard_answer),
+             deviation_answer = $3, triggers_rule_id = $4, default_impact = $5,
+             sort_order = COALESCE($6, sort_order)
+       WHERE id = $7 RETURNING *`,
+      [question, standard_answer, deviation_answer, triggers_rule_id, default_impact, sort_order, id]);
+    if (!r.rows.length) return res.status(404).json({ error: 'not found' });
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+router.delete('/site-conditions/:id', async (req, res) => {
+  try {
+    const r = await req.db.query(`DELETE FROM site_conditions_catalog WHERE id = $1 RETURNING id`, [req.params.id]);
+    if (!r.rows.length) return res.status(404).json({ error: 'not found' });
+    res.json({ deleted: r.rows[0].id });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Add-ons CRUD (list already exists at /addons)
+router.post('/addons', async (req, res) => {
+  const { package_id, name, description, unit, default_rate, inclusions, exclusions, sort_order } = req.body || {};
+  if (!name || default_rate == null) return res.status(400).json({ error: 'name and default_rate required' });
+  try {
+    const r = await req.db.query(
+      `INSERT INTO package_addons (package_id, name, description, unit, default_rate, inclusions, exclusions, sort_order, is_active)
+       VALUES ($1,$2,$3,COALESCE($4,'unit'),$5,$6,$7, COALESCE($8, 999), TRUE) RETURNING *`,
+      [package_id || null, name, description || null, unit, default_rate, inclusions || null, exclusions || null, sort_order]);
+    res.status(201).json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+router.put('/addons/:id', async (req, res) => {
+  const { name, description, unit, default_rate, inclusions, exclusions, sort_order, is_active, package_id } = req.body || {};
+  try {
+    const r = await req.db.query(
+      `UPDATE package_addons
+         SET name = COALESCE($1, name), description = $2, unit = COALESCE($3, unit),
+             default_rate = COALESCE($4, default_rate), inclusions = $5, exclusions = $6,
+             sort_order = COALESCE($7, sort_order), is_active = COALESCE($8, is_active),
+             package_id = $9, updated_at = NOW()
+       WHERE id = $10 RETURNING *`,
+      [name, description, unit, default_rate, inclusions, exclusions, sort_order, is_active, package_id || null, req.params.id]);
+    if (!r.rows.length) return res.status(404).json({ error: 'not found' });
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+router.delete('/addons/:id', async (req, res) => {
+  try {
+    const r = await req.db.query(`DELETE FROM package_addons WHERE id = $1 RETURNING id`, [req.params.id]);
+    if (!r.rows.length) return res.status(404).json({ error: 'not found' });
+    res.json({ deleted: r.rows[0].id });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Qty per SFT CRUD
+router.get('/qty-ratios', async (req, res) => {
+  try {
+    const r = await req.db.query(
+      `SELECT iq.id, iq.item_id, iq.package_id, iq.qty_per_sqft, iq.wastage_pct, iq.notes,
+              i.item_name, i.item_category, i.item_unit
+         FROM item_qty_per_sqft iq
+         JOIN items i ON i.item_id = iq.item_id
+         ORDER BY i.item_category, i.item_name, iq.package_id NULLS FIRST`);
+    res.json(r.rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+router.post('/qty-ratios', async (req, res) => {
+  const { item_id, package_id, qty_per_sqft, wastage_pct, notes } = req.body || {};
+  if (!item_id || qty_per_sqft == null) return res.status(400).json({ error: 'item_id and qty_per_sqft required' });
+  try {
+    const r = await req.db.query(
+      `INSERT INTO item_qty_per_sqft (item_id, package_id, qty_per_sqft, wastage_pct, notes)
+       VALUES ($1,$2,$3, COALESCE($4, 0), $5)
+       ON CONFLICT (item_id, package_id) DO UPDATE
+         SET qty_per_sqft = EXCLUDED.qty_per_sqft, wastage_pct = EXCLUDED.wastage_pct, notes = EXCLUDED.notes, updated_at = NOW()
+       RETURNING *`,
+      [item_id, package_id || null, qty_per_sqft, wastage_pct, notes || null]);
+    res.status(201).json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+router.put('/qty-ratios/:id', async (req, res) => {
+  const { qty_per_sqft, wastage_pct, notes } = req.body || {};
+  try {
+    const r = await req.db.query(
+      `UPDATE item_qty_per_sqft
+         SET qty_per_sqft = COALESCE($1, qty_per_sqft), wastage_pct = COALESCE($2, wastage_pct),
+             notes = $3, updated_at = NOW()
+       WHERE id = $4 RETURNING *`,
+      [qty_per_sqft, wastage_pct, notes, req.params.id]);
+    if (!r.rows.length) return res.status(404).json({ error: 'not found' });
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+router.delete('/qty-ratios/:id', async (req, res) => {
+  try {
+    const r = await req.db.query(`DELETE FROM item_qty_per_sqft WHERE id = $1 RETURNING id`, [req.params.id]);
+    if (!r.rows.length) return res.status(404).json({ error: 'not found' });
+    res.json({ deleted: r.rows[0].id });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 router.get('/rules', async (req, res) => {
   try {
     const { package_id } = req.query;
@@ -171,6 +287,76 @@ router.get('/rules', async (req, res) => {
     );
     res.json(r.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Full rulebook + all tiers pivoted for the editor grid.
+router.get('/rules/grid', async (req, res) => {
+  try {
+    const rules = (await req.db.query(
+      `SELECT rule_id, module, rule_type, title, basis, uom, overage_mode,
+              spec_text, pdf_annexure, pdf_item_number, sort_order
+         FROM package_rules ORDER BY sort_order`
+    )).rows;
+    const tiers = (await req.db.query(
+      `SELECT rule_id, package_id, included, value_cap, rate_cap, brand_options, overage_rate, notes
+         FROM package_rule_tiers`
+    )).rows;
+    const packages = (await req.db.query(
+      `SELECT id, package_name, sort_order FROM packages ORDER BY sort_order`
+    )).rows;
+
+    // pivot tiers into {rule_id: {package_id: tier}}
+    const tierMap = new Map();
+    for (const t of tiers) {
+      if (!tierMap.has(t.rule_id)) tierMap.set(t.rule_id, {});
+      tierMap.get(t.rule_id)[t.package_id] = t;
+    }
+    const merged = rules.map(r => ({ ...r, tiers: tierMap.get(r.rule_id) || {} }));
+    res.json({ packages, rules: merged });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Update or create a tier row for a specific rule+package.
+router.put('/rules/:rule_id/tiers/:package_id', async (req, res) => {
+  const { rule_id, package_id } = req.params;
+  const { included, value_cap, rate_cap, brand_options, overage_rate, notes } = req.body || {};
+  try {
+    // Ensure the rule and package both exist
+    const chk = await req.db.query(
+      `SELECT 1 FROM package_rules WHERE rule_id = $1 UNION ALL SELECT 1 FROM packages WHERE id = $2`,
+      [rule_id, package_id]
+    );
+    if (chk.rows.length < 2) return res.status(404).json({ error: 'rule_id or package_id not found' });
+
+    const brandArr = Array.isArray(brand_options) ? brand_options
+      : (typeof brand_options === 'string' && brand_options.trim())
+        ? brand_options.split(',').map(s => s.trim()).filter(Boolean)
+        : null;
+
+    const r = await req.db.query(
+      `INSERT INTO package_rule_tiers (rule_id, package_id, included, value_cap, rate_cap, brand_options, overage_rate, notes)
+       VALUES ($1, $2, COALESCE($3, TRUE), $4, $5, $6, $7, $8)
+       ON CONFLICT (rule_id, package_id) DO UPDATE
+         SET included = COALESCE(EXCLUDED.included, package_rule_tiers.included),
+             value_cap = EXCLUDED.value_cap,
+             rate_cap = EXCLUDED.rate_cap,
+             brand_options = EXCLUDED.brand_options,
+             overage_rate = EXCLUDED.overage_rate,
+             notes = EXCLUDED.notes
+       RETURNING *`,
+      [rule_id, package_id,
+       included === undefined ? null : included,
+       value_cap === '' || value_cap == null ? null : Number(value_cap),
+       rate_cap  === '' || rate_cap  == null ? null : Number(rate_cap),
+       brandArr,
+       overage_rate === '' || overage_rate == null ? null : Number(overage_rate),
+       notes || null]
+    );
+    res.json(r.rows[0]);
+  } catch (err) {
+    console.error('[rules tier update]', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // List saved quotations. Supports ?client_id=, ?status=, ?limit=, ?offset=.
@@ -386,11 +572,12 @@ router.get('/:id/annexure', async (req, res) => {
     const rules = await db.query(
       `SELECT r.rule_id, r.module, r.rule_type, r.title, r.spec_text, r.uom, r.basis, r.overage_mode,
               r.measurement_convention, r.sort_order,
+              r.pdf_item_number, r.pdf_annexure, r.pdf_sub_label,
               t.included, t.value_cap, t.rate_cap, t.brand_options, t.overage_rate, t.notes AS tier_notes
          FROM package_rules r
          LEFT JOIN package_rule_tiers t ON t.rule_id = r.rule_id AND t.package_id = $1
          WHERE (t.included IS NULL OR t.included = TRUE)
-         ORDER BY r.sort_order`,
+         ORDER BY r.pdf_annexure NULLS LAST, r.pdf_item_number NULLS LAST, r.sort_order`,
       [head.package_id]
     );
 
@@ -449,37 +636,70 @@ router.get('/:id/annexure', async (req, res) => {
       return parts;
     }
 
-    // Modules that go into the main annexure vs the electrical/plumbing sub-annexure
-    const ELP_MODULES = new Set(['electrical', 'plumbing', 'bathroom']);
+    // Group rules by pdf_item_number → each PDF row can bundle several rules as sub-blocks.
+    // PDF item titles (canonical WH/JS numbering) — used as the row heading when defined.
+    const MAIN_TITLES = {
+      1:'EXCAVATION',                     2:'ROCK CUTTING',                     3:'BACK FILLING',
+      4:'TERMITE PROTECTION (ATT)',       5:'SURFACE GROUND WATER',             6:'FOUNDATION / STRUCTURE',
+      7:'FLOOR HEIGHT',                   8:'STEEL BARS FOR RCC STRUCTURE',     9:'PLAIN CEMENT CONCRETE (PCC)',
+     10:'CONCRETE FOR RCC STRUCTURE',    11:'CEMENT FOR RCC STRUCTURE',        12:'SAND FOR RCC STRUCTURE',
+     13:'AGGREGATE FOR RCC STRUCTURE',   14:'CRS / TOTAL FLOORING WORK',       15:'BRICK WORK (RED / CEMENT / LIGHT-WEIGHT)',
+     16:'CEMENT BRICK / MORTAR',         17:'SAND FOR BRICK WORK',             18:'PLASTERING — EXTERNAL WALLS',
+     19:'PLASTERING — INTERNAL WALLS',   20:'WATERPROOFING (Toilets / Utility / Balcony / Sump / Lift / Terrace)',
+     21:'HONEYCOMB',                     22:'PAINTING — EXTERNAL WALLS / COMPOUND WALL',
+     23:'PAINTING — INTERNAL WALLS',     24:'PAINTING — ENTRANCE MAIN DOORS',
+     25:'PAINTING — INTERNAL DOORS',     26:'PAINTING — INTERNAL TOILET DOORS',
+     27:'PAINTING — MS WORK',            28:'DOORS / WINDOWS / VENTILATORS',
+     29:'MILD / STAINLESS STEEL WORK',   30:'FLOORING',
+     31:'ELEVATION ELEMENTS',            32:'CURING',
+     33:'SCAFFOLDING',                   34:'DEEP CLEANING',
+    };
+    const ELP_TITLES = {
+      1:'ELECTRICAL — POWER WIRING',
+      2:'ELECTRICAL FIXTURES',
+      3:'DISTRIBUTION BOARDS / MCBs',
+      4:'PLUMBING (Water Supply / Drainage / Manholes / Sump / OHT)',
+      5:'SANITARYWARE (per-bathroom fixture set + kitchen / utility taps)',
+    };
 
-    let seq = 1;
-    const mainSections = [];
-    for (const [modKey, title] of SECTION_ORDER) {
-      if (ELP_MODULES.has(modKey)) continue;
-      const rows = byModule.get(modKey);
-      if (!rows || !rows.length) continue;
-      const items = rows.map(r => ({
-        seq: seq++,
-        rule_id: r.rule_id, rule_type: r.rule_type, title: r.title,
-        description: r.spec_text || '', remarks: composeRemarks(r),
-      }));
-      mainSections.push({ module: modKey, section_title: title, items });
+    // Aggregate multiple rules into one PDF row.
+    function bucketRow(target, rule) {
+      const remarks = composeRemarks(rule);
+      target.rules.push({
+        rule_id: rule.rule_id,
+        sub_label: rule.pdf_sub_label || null,
+        description: rule.spec_text || '',
+        remarks,
+      });
+      // Roll up brand/cap/remark lines to row level too (deduplicated by string)
+      for (const r of remarks) {
+        if (!target.remarks_seen.has(r)) { target.remarks_seen.add(r); target.remarks.push(r); }
+      }
     }
 
-    // Electrical & Plumbing sub-annexure (separate numbering)
-    let elpSeq = 1;
-    const elpSections = [];
-    for (const [modKey, title] of SECTION_ORDER) {
-      if (!ELP_MODULES.has(modKey)) continue;
-      const rows = byModule.get(modKey);
-      if (!rows || !rows.length) continue;
-      const items = rows.map(r => ({
-        seq: elpSeq++,
-        rule_id: r.rule_id, rule_type: r.rule_type, title: r.title,
-        description: r.spec_text || '', remarks: composeRemarks(r),
-      }));
-      elpSections.push({ module: modKey, section_title: title, items });
+    const mainBuckets = new Map(); // pdf_item_number → {seq, title, rules[], remarks[]}
+    const elpBuckets  = new Map();
+    for (const r of rules.rows) {
+      if (r.pdf_item_number == null) continue;
+      const bucket = (r.pdf_annexure === 'elp') ? elpBuckets : mainBuckets;
+      if (!bucket.has(r.pdf_item_number)) {
+        const titleMap = (r.pdf_annexure === 'elp') ? ELP_TITLES : MAIN_TITLES;
+        bucket.set(r.pdf_item_number, {
+          seq: r.pdf_item_number,
+          title: titleMap[r.pdf_item_number] || r.title.toUpperCase(),
+          rules: [],
+          remarks: [],
+          remarks_seen: new Set(),
+        });
+      }
+      bucketRow(bucket.get(r.pdf_item_number), r);
     }
+    const mainSections = [...mainBuckets.values()].sort((a, b) => a.seq - b.seq)
+      .map(({ remarks_seen, ...b }) => b);
+    const elpSections  = [...elpBuckets.values()].sort((a, b) => a.seq - b.seq)
+      .map(({ remarks_seen, ...b }) => b);
+    let seq = mainSections.length;
+    let elpSeq = elpSections.length;
 
     // Room-by-room electrical fixture matrix (from WH/B&B PDFs, tier-agnostic; brand switches per tier)
     const brandRow = rules.rows.find(r => r.rule_id === 'R-ELE-003');
@@ -579,6 +799,175 @@ router.get('/:id/annexure', async (req, res) => {
     });
   } catch (err) {
     console.error('[annexure] error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Status transition for a quotation.
+// Legal transitions:
+//   Draft   → Sent | Cancelled
+//   Sent    → Approved | Rejected | Expired
+//   Approved → Contract Signed
+//   Rejected / Cancelled / Expired → (terminal)
+// DB CHECK constraint uses underscored spellings — align with it.
+const ALLOWED_STATUS_TRANSITIONS = {
+  'Draft':           ['Under_Review', 'Sent', 'Cancelled'],
+  'Under_Review':    ['Client_Review', 'Cancelled'],
+  'Client_Review':   ['Sent', 'Cancelled'],
+  'Sent':            ['Approved', 'Cancelled'],
+  'Approved':        ['Contract_Signed', 'Cancelled'],
+  'Contract_Signed': ['Active'],
+  'Active':          ['Completed'],
+  'Completed':       [],
+  'Cancelled':       [],
+};
+
+router.patch('/:id/status', async (req, res) => {
+  const db = req.db;
+  const { id } = req.params;
+  const { status: nextStatus } = req.body || {};
+  if (!nextStatus) return res.status(400).json({ error: 'status required' });
+
+  try {
+    const current = await db.query(
+      `SELECT client_quotation_id, status, contract_signed FROM client_quotations WHERE client_quotation_id = $1`,
+      [id]
+    );
+    if (!current.rows.length) return res.status(404).json({ error: 'Quotation not found' });
+    const currentStatus = current.rows[0].status || 'Draft';
+
+    const allowed = ALLOWED_STATUS_TRANSITIONS[currentStatus] || [];
+    if (!allowed.includes(nextStatus)) {
+      return res.status(400).json({
+        error: `Illegal transition ${currentStatus} → ${nextStatus}`,
+        allowed_next: allowed,
+      });
+    }
+
+    // Some transitions have side-effects (dates, flags)
+    const now = new Date().toISOString().slice(0, 10);
+    const patch = { status: nextStatus };
+    if (nextStatus === 'Sent')            patch.sent_to_client_date = now;
+    if (nextStatus === 'Client_Review')   patch.client_review_date = now;
+    if (nextStatus === 'Approved')        patch.client_approval_date = now;
+    if (nextStatus === 'Contract_Signed') { patch.contract_signed = true; patch.contract_signed_date = now; }
+
+    const setClauses = Object.keys(patch).map((k, i) => `${k} = $${i + 1}`).join(', ');
+    const values = Object.values(patch);
+    values.push(id);
+
+    const r = await db.query(
+      `UPDATE client_quotations SET ${setClauses}, updated_at = NOW()
+         WHERE client_quotation_id = $${values.length}
+         RETURNING client_quotation_id, client_quotation_number, status,
+                   sent_to_client_date, client_review_date, client_approval_date,
+                   contract_signed, contract_signed_date`,
+      values
+    );
+    res.json(r.rows[0]);
+  } catch (err) {
+    console.error('[quotation status]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Promote an approved / signed quotation into a project row.
+// Preserves the link via project_id ↔ client_quotation_id in metadata.
+router.post('/:id/promote-to-project', async (req, res) => {
+  const db = req.db;
+  const { id } = req.params;
+  try {
+    const qres = await db.query(
+      `SELECT cq.*, c.client_name FROM client_quotations cq
+         LEFT JOIN clients c ON c.client_id = cq.client_id
+         WHERE cq.client_quotation_id = $1`,
+      [id]
+    );
+    if (!qres.rows.length) return res.status(404).json({ error: 'Quotation not found' });
+    const q = qres.rows[0];
+    if (!['Approved', 'Contract_Signed', 'Active'].includes(q.status)) {
+      return res.status(400).json({ error: `Quotation must be Approved / Contract_Signed / Active. Current: ${q.status}` });
+    }
+
+    // Guard: if a project already exists for this quotation, don't create a second one.
+    const existing = await db.query(
+      `SELECT project_id FROM projects WHERE metadata->>'from_quotation_id' = $1`,
+      [String(id)]
+    );
+    if (existing.rows.length) {
+      return res.status(409).json({ error: 'Project already exists for this quotation', project_id: existing.rows[0].project_id });
+    }
+
+    const floorUnits = (await db.query(
+      `SELECT floor_number, floor_label, unit_type, units_count, area_sqft, area_category
+         FROM quotation_floor_units WHERE client_quotation_id = $1 ORDER BY floor_number, id`,
+      [id]
+    )).rows;
+
+    const totalArea = floorUnits.reduce((s, f) => s + Number(f.area_sqft) * (Number(f.units_count) || 1), 0);
+    const maxFloor = floorUnits.reduce((m, f) => Math.max(m, Number(f.floor_number) || 0), 0);
+    const projectName = q.project_title || (q.client_name ? `${q.client_name} — ${q.client_quotation_number}` : q.client_quotation_number);
+    const finalCost = (Number(q.floor_units_total_amount) || 0)
+                    + (Number(q.addons_total_amount) || 0)
+                    + (Number(q.total_design_amount) || 0);
+
+    await db.query('BEGIN');
+    const projIns = await db.query(
+      `INSERT INTO projects (
+         project_name, client_id, description, project_type,
+         start_date, status, estimated_budget, currency,
+         contract_number, contract_date, total_area, area_unit, number_of_floors,
+         metadata
+       ) VALUES ($1, $2, $3, 'Residential', CURRENT_DATE, 'Planning', $4, 'INR',
+                 $5, COALESCE($6::date, CURRENT_DATE), $7, 'sqft', $8, $9)
+       RETURNING project_id`,
+      [
+        projectName,
+        q.client_id,
+        `Auto-created from quotation ${q.client_quotation_number} (${q.package_type} package)`,
+        finalCost,
+        q.client_quotation_number,
+        q.contract_signed_date,
+        totalArea,
+        Math.max(1, maxFloor + 1),   // count of floors present (0-indexed + 1)
+        JSON.stringify({
+          from_quotation_id: Number(id),
+          quotation_number: q.client_quotation_number,
+          package_type: q.package_type,
+          package_rate_per_sqft: q.package_rate_per_sqft,
+        }),
+      ]
+    );
+    const project_id = projIns.rows[0].project_id;
+
+    // Seed project_floors from quotation floor units (dedup by floor_number)
+    const seenFloors = new Set();
+    for (const f of floorUnits) {
+      if (seenFloors.has(f.floor_number)) continue;
+      seenFloors.add(f.floor_number);
+      const label = f.floor_label || `Floor ${f.floor_number}`;
+      const areaOnFloor = floorUnits
+        .filter(x => x.floor_number === f.floor_number)
+        .reduce((s, x) => s + Number(x.area_sqft) * (Number(x.units_count) || 1), 0);
+      await db.query(
+        `INSERT INTO project_floors (project_id, floor_number, floor_name, floor_type, floor_area)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [project_id, f.floor_number, label, f.area_category || 'built_up', areaOnFloor]
+      );
+    }
+    await db.query('COMMIT');
+
+    res.status(201).json({
+      project_id,
+      project_name: projectName,
+      total_area: totalArea,
+      floors_created: seenFloors.size,
+      from_quotation_id: Number(id),
+      from_quotation_number: q.client_quotation_number,
+    });
+  } catch (err) {
+    await db.query('ROLLBACK').catch(() => {});
+    console.error('[promote-to-project]', err.message);
     res.status(500).json({ error: err.message });
   }
 });

@@ -68,6 +68,14 @@ import PackagesManagement from './pages/admin/modules/PackagesManagement';
 import UsersManagement from './pages/admin/modules/UsersManagement';
 import RolesManagement from './pages/admin/modules/RolesManagement';
 import PermissionsManagement from './pages/admin/modules/PermissionsManagement';
+import RulebookEditor from './pages/admin/RulebookEditor';
+import QuotationConfigEditor from './pages/admin/QuotationConfigEditor';
+import ProjectBOQ from './pages/projects/boq/ProjectBOQ';
+import ProjectExecution from './pages/projects/execution/ProjectExecution';
+import ProjectPayments from './pages/projects/payments/ProjectPayments';
+import ProjectPurchaseOrders from './pages/projects/purchaseorders/ProjectPurchaseOrders';
+import EnquiriesList from './pages/crm/enquiries/EnquiriesList';
+import EnquiryDetail from './pages/crm/enquiries/EnquiryDetail';
 
 // Admin Modules - Placeholders (only remaining ones)
 import {
@@ -174,7 +182,28 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
+            <Route
+              path="/crm/enquiries"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EnquiriesList />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crm/enquiries/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EnquiryDetail />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
             {/* Clients Routes */}
             <Route
               path="/clients"
@@ -273,6 +302,50 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <BlocksManagement />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/projects/:projectId/boq"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectBOQ />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/projects/:projectId/execution"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectExecution />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/projects/:projectId/payments"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectPayments />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/projects/:projectId/purchase-orders"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectPurchaseOrders />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -458,6 +531,8 @@ function App() {
               
               {/* Package Management Routes */}
               <Route path="packages" element={<PackagesManagement />} />
+              <Route path="rulebook" element={<RulebookEditor />} />
+              <Route path="quotation-config" element={<QuotationConfigEditor />} />
               
               {/* Dimensions & Standards Routes */}
               <Route path="door-dimensions" element={<DoorDimensionsManagement />} />

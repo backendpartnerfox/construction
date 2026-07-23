@@ -14,26 +14,30 @@ router.get('/', async (req, res) => {
   const { project_id, vendor_id, status, from_date, to_date } = req.query;
   
   try {
+    // purchase_orders has no project_id column — project link is via modules.
+    // So we JOIN po -> modules -> projects.
     let query = `
-      SELECT 
+      SELECT
         po.*,
+        m.project_id AS project_id,
         p.project_name,
         v.vendor_name,
         v.contact_person,
         v.contact_number,
-        COUNT(DISTINCT poi.po_item_id) as item_count
+        COUNT(DISTINCT poi.po_line_id) as item_count
       FROM purchase_orders po
-      LEFT JOIN projects p ON po.project_id = p.project_id
+      LEFT JOIN modules m ON po.module_id = m.module_id
+      LEFT JOIN projects p ON m.project_id = p.project_id
       LEFT JOIN vendors v ON po.vendor_id = v.vendor_id
-      LEFT JOIN purchase_order_items poi ON po.po_id = poi.po_id
+      LEFT JOIN po_line_items poi ON po.po_id = poi.po_id
       WHERE 1=1
     `;
-    
+
     const params = [];
     let paramIndex = 1;
-    
+
     if (project_id) {
-      query += ` AND po.project_id = $${paramIndex}`;
+      query += ` AND m.project_id = $${paramIndex}`;
       params.push(project_id);
       paramIndex++;
     }
@@ -63,7 +67,7 @@ router.get('/', async (req, res) => {
     }
     
     query += `
-      GROUP BY po.po_id, p.project_name, v.vendor_name, v.contact_person, v.contact_number
+      GROUP BY po.po_id, m.project_id, p.project_name, v.vendor_name, v.contact_person, v.contact_number
       ORDER BY po.created_at DESC
     `;
     
@@ -88,10 +92,11 @@ router.get('/:id', async (req, res) => {
   const { id } = req.params;
   
   try {
-    // Get PO header
+    // Get PO header — project link via modules chain.
     const poResult = await db.query(`
-      SELECT 
+      SELECT
         po.*,
+        m.project_id AS project_id,
         p.project_name,
         v.vendor_name,
         v.contact_person,
@@ -99,7 +104,8 @@ router.get('/:id', async (req, res) => {
         v.email as vendor_email,
         v.address as vendor_address
       FROM purchase_orders po
-      LEFT JOIN projects p ON po.project_id = p.project_id
+      LEFT JOIN modules m ON po.module_id = m.module_id
+      LEFT JOIN projects p ON m.project_id = p.project_id
       LEFT JOIN vendors v ON po.vendor_id = v.vendor_id
       WHERE po.po_id = $1
     `, [id]);
@@ -142,88 +148,67 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create new PO
+// Create new PO. purchase_orders is keyed on module_id (project link is via
+// modules), NOT project_id. Line-items live in po_line_items — inserted
+// separately via /po_line_items.
 router.post('/', async (req, res) => {
   const db = req.db;
   const {
-    project_id,
-    vendor_id,
-    po_date,
-    expected_delivery_date,
-    payment_terms,
-    delivery_terms,
-    notes,
-    terms_and_conditions,
-    created_by,
-    items
+    module_id, work_order_id, po_number, vendor_id, po_date,
+    expected_delivery_date, delivery_address,
+    subtotal, tax_amount, total_amount, total_items,
+    advance_percentage, advance_amount,
+    payment_terms, partial_delivery_allowed,
+    status, created_by, items,
   } = req.body;
-  
-  if (!project_id || !vendor_id || !items || items.length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: 'Project, vendor, and items are required'
-    });
+
+  if (!module_id || !vendor_id || !po_number) {
+    return res.status(400).json({ success: false, error: 'module_id, vendor_id and po_number are required' });
   }
-  
+
   try {
     await db.query('BEGIN');
-    
-    // Insert PO header
-    const poResult = await db.query(`
-      INSERT INTO purchase_orders (
-        project_id, vendor_id, po_date, expected_delivery_date,
-        payment_terms, delivery_terms, notes, terms_and_conditions,
-        status, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING *
-    `, [
-      project_id, vendor_id, 
-      po_date || new Date().toISOString().split('T')[0],
-      expected_delivery_date,
-      payment_terms, delivery_terms, notes, terms_and_conditions,
-      'Draft', created_by
-    ]);
-    
+    const poResult = await db.query(
+      `INSERT INTO purchase_orders (
+         module_id, work_order_id, po_number, po_date, vendor_id,
+         total_items, subtotal, tax_amount, total_amount,
+         delivery_address, expected_delivery_date, partial_delivery_allowed,
+         payment_terms, advance_percentage, advance_amount,
+         status, created_by, created_at
+       ) VALUES ($1,$2,$3,COALESCE($4::date, CURRENT_DATE),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15, COALESCE($16,'Draft'),$17, NOW())
+       RETURNING *`,
+      [
+        module_id, work_order_id || null, po_number, po_date || null, vendor_id,
+        total_items || 0, subtotal || 0, tax_amount || 0, total_amount || 0,
+        delivery_address || null, expected_delivery_date || null, partial_delivery_allowed || false,
+        payment_terms || null, advance_percentage || 0, advance_amount || 0,
+        status, created_by || null,
+      ]
+    );
     const po = poResult.rows[0];
-    
-    // Insert PO items
-    for (const item of items) {
-      await db.query(`
-        INSERT INTO purchase_order_items (
-          po_id, item_id, material_costing_id, choice_option_id,
-          item_description, specifications, quantity, unit,
-          unit_price, discount_percentage, gst_percentage
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      `, [
-        po.po_id,
-        item.item_id,
-        item.material_costing_id || null,
-        item.choice_option_id || null,
-        item.item_description || null,
-        item.specifications || null,
-        item.quantity,
-        item.unit,
-        item.unit_price,
-        item.discount_percentage || 0,
-        item.gst_percentage || 18
-      ]);
+
+    // Optional: caller may include an items[] array — insert into po_line_items.
+    if (Array.isArray(items)) {
+      let lineNo = 1;
+      for (const it of items) {
+        await db.query(
+          `INSERT INTO po_line_items (
+             po_id, line_number, item_id, item_description, specifications,
+             quantity, unit, unit_price, discount_percentage, tax_percentage,
+             line_total, required_by_date
+           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          [
+            po.po_id, lineNo++,
+            it.item_id, it.item_description || null, it.specifications || null,
+            it.quantity, it.unit, it.unit_price,
+            it.discount_percentage || 0, it.tax_percentage || 18,
+            it.line_total || 0, it.required_by_date || null,
+          ]
+        );
+      }
     }
-    
     await db.query('COMMIT');
-    
-    // Fetch complete PO with items
-    const completePoResult = await db.query(`
-      SELECT po.*, 
-        (SELECT json_agg(poi.*) FROM purchase_order_items poi WHERE poi.po_id = po.po_id) as items
-      FROM purchase_orders po
-      WHERE po.po_id = $1
-    `, [po.po_id]);
-    
-    res.status(201).json({
-      success: true,
-      message: 'Purchase Order created successfully',
-      data: completePoResult.rows[0]
-    });
+    res.status(201).json({ success: true, po_id: po.po_id, ...po });
     
   } catch (error) {
     await db.query('ROLLBACK');

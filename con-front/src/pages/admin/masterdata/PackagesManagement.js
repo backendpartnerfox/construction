@@ -62,9 +62,12 @@ const PackagesManagement = () => {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/packages`);
       const data = await response.json();
-      if (data.success) {
-        setPackages(data.data);
-      }
+      // /api/packages returns a plain array; be defensive about other shapes too.
+      const arr = Array.isArray(data) ? data
+        : Array.isArray(data?.data) ? data.data
+        : Array.isArray(data?.packages) ? data.packages
+        : [];
+      setPackages(arr);
     } catch (error) {
       console.error('Error fetching packages:', error);
       toast.error('Failed to fetch packages');

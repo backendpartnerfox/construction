@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 /**
  * @swagger
@@ -63,21 +64,38 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    // Authenticate user
+    // Authenticate user — fetch by username only, then bcrypt-compare the password.
     const userResult = await db.query(
-      'SELECT id, username, email, first_name, last_name FROM users WHERE username = $1 AND password = $2 AND is_active = TRUE',
-      [username, password]
+      'SELECT id, username, email, first_name, last_name, password FROM users WHERE username = $1 AND is_active = TRUE',
+      [username]
     );
 
     if (userResult.rows.length === 0) {
-      console.log('[UserSessions] Login failed: Invalid credentials');
-      return res.status(401).json({ 
-        success: false,
-        error: "Invalid credentials" 
-      });
+      console.log('[UserSessions] Login failed: user not found');
+      return res.status(401).json({ success: false, error: "Invalid credentials" });
     }
 
-    const user = userResult.rows[0];
+    const userRow = userResult.rows[0];
+    let passwordOk = false;
+    const storedPw = userRow.password || '';
+    if (/^\$2[aby]\$/.test(storedPw) && storedPw.length === 60) {
+      passwordOk = await bcrypt.compare(password, storedPw);
+    } else {
+      // Legacy plaintext fallback — upgrade to bcrypt on successful match.
+      if (storedPw === password) {
+        passwordOk = true;
+        const upgraded = await bcrypt.hash(password, 10);
+        await db.query('UPDATE users SET password = $1 WHERE id = $2', [upgraded, userRow.id]);
+        console.log('[UserSessions] Upgraded legacy password to bcrypt for user', userRow.username);
+      }
+    }
+    if (!passwordOk) {
+      console.log('[UserSessions] Login failed: bad password');
+      return res.status(401).json({ success: false, error: "Invalid credentials" });
+    }
+
+    // Do NOT leak the hash to downstream code.
+    const { password: _dropPw, ...user } = userRow;
     console.log('[UserSessions] User authenticated:', user.username);
     
     // Get user roles

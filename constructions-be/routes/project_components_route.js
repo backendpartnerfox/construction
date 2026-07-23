@@ -45,6 +45,22 @@ const router = express.Router();
  *               items:
  *                 type: object
  */
+// Convenience: list all components attached to one project.
+router.get('/project/:projectId', async (req, res) => {
+  const db = req.db;
+  const { projectId } = req.params;
+  try {
+    const r = await db.query(
+      `SELECT * FROM project_components WHERE project_id = $1 ORDER BY component_id`,
+      [projectId]
+    );
+    res.json(r.rows);
+  } catch (err) {
+    console.error('[project_components/project/:id] error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   const db = req.db;
   const { project_id, floor_id, category_id, is_active } = req.query;

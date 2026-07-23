@@ -5,7 +5,7 @@ import {
   FileText, Settings, Truck, ClipboardList, Calendar,
   BarChart3, Layout, Boxes, ListChecks, GitBranch, Layers,
   Target, CheckCircle2, PackageCheck, ChevronLeft, ChevronRight,
-  Shield, Key
+  Shield, Key, BookOpen
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -47,6 +47,8 @@ const AdminDashboard = () => {
       icon: PackageCheck,
       children: [
         { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages' },
+        { id: 'rulebook', label: 'Rulebook', icon: BookOpen, path: '/admin/rulebook' },
+        { id: 'quotation-config', label: 'Quotation Config', icon: Settings, path: '/admin/quotation-config' },
       ]
     },
     {

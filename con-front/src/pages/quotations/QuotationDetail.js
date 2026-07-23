@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, FileText, Printer, Edit, Calendar, User, Package, IndianRupee, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, FileText, Printer, Edit, Calendar, User, Package, IndianRupee, ChevronDown, ChevronRight, Send, Check, X, PenLine, Rocket, Download } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import html2pdf from 'html2pdf.js';
 
 const formatINR = (n, dec = 2) => {
   const x = Number(n);
@@ -48,6 +49,77 @@ const QuotationDetail = () => {
     })();
   }, [id]);
 
+  // Legal next statuses per current status (DB uses underscored spellings)
+  const NEXT_STATUS = {
+    'Draft':           [{ to: 'Sent',            label: 'Send to client',   icon: Send,    color: 'bg-blue-600 hover:bg-blue-700' },
+                        { to: 'Cancelled',       label: 'Cancel',           icon: X,       color: 'bg-gray-500 hover:bg-gray-600' }],
+    'Under_Review':    [{ to: 'Client_Review',   label: 'Move to client review', icon: Send, color: 'bg-blue-600 hover:bg-blue-700' },
+                        { to: 'Cancelled',       label: 'Cancel',           icon: X,       color: 'bg-gray-500 hover:bg-gray-600' }],
+    'Client_Review':   [{ to: 'Sent',            label: 'Send to client',   icon: Send,    color: 'bg-blue-600 hover:bg-blue-700' }],
+    'Sent':            [{ to: 'Approved',        label: 'Mark approved',    icon: Check,   color: 'bg-emerald-600 hover:bg-emerald-700' },
+                        { to: 'Cancelled',       label: 'Cancel',           icon: X,       color: 'bg-red-600 hover:bg-red-700' }],
+    'Approved':        [{ to: 'Contract_Signed', label: 'Contract signed',  icon: PenLine, color: 'bg-purple-600 hover:bg-purple-700' }],
+    'Contract_Signed': [{ to: 'Active',          label: 'Start execution',  icon: Check,   color: 'bg-emerald-600 hover:bg-emerald-700' }],
+    'Active':          [{ to: 'Completed',       label: 'Mark completed',   icon: Check,   color: 'bg-emerald-600 hover:bg-emerald-700' }],
+    'Completed':       [],
+    'Cancelled':       [],
+  };
+  const STATUS_LABEL = { 'Under_Review': 'Under Review', 'Client_Review': 'Client Review', 'Contract_Signed': 'Contract Signed' };
+  const prettyStatus = s => STATUS_LABEL[s] || s || 'Draft';
+
+  const changeStatus = async (nextStatus) => {
+    try {
+      const res = await api.patch(`/quotations/${id}/status`, { status: nextStatus });
+      setQ(prev => ({ ...prev, ...res.data }));
+      toast.success(`Status → ${prettyStatus(res.data.status)}`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.error || 'Failed to change status');
+    }
+  };
+
+  const [downloading, setDownloading] = useState(false);
+  const downloadPDF = async () => {
+    setDownloading(true);
+    const el = document.getElementById('quotation-pdf-root');
+    if (!el) { setDownloading(false); toast.error('Nothing to export'); return; }
+    const opts = {
+      margin:       [10, 10, 12, 10],
+      filename:     `${q?.client_quotation_number || 'quotation'}.pdf`,
+      image:        { type: 'jpeg', quality: 0.95 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'], avoid: 'tr' },
+    };
+    try {
+      await html2pdf().set(opts).from(el).save();
+      toast.success('PDF downloaded');
+    } catch (err) {
+      console.error(err);
+      toast.error('PDF generation failed');
+    } finally { setDownloading(false); }
+  };
+
+  const promoteToProject = async () => {
+    if (!window.confirm('Create a project from this quotation? This will seed the floors and link them.')) return;
+    try {
+      const res = await api.post(`/quotations/${id}/promote-to-project`);
+      toast.success(`Project created: ${res.data.project_name}`);
+      navigate(`/projects/${res.data.project_id}`);
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 409) {
+        // Already exists — navigate to it
+        const pid = err.response.data.project_id;
+        if (pid && window.confirm('A project already exists for this quotation. Open it?')) {
+          navigate(`/projects/${pid}`);
+        }
+      } else {
+        toast.error(err.response?.data?.error || 'Failed to create project');
+      }
+    }
+  };
+
   const toggleSection = (name) => {
     setOpenSections(prev => {
       const next = new Set(prev);
@@ -80,9 +152,31 @@ const QuotationDetail = () => {
             <h1 className="text-2xl font-bold text-gray-900">{q.client_quotation_number}</h1>
             {q.project_title && <p className="text-sm text-gray-600 mt-0.5">{q.project_title}</p>}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            {/* Promote to project — appears once quotation is Approved */}
+            {['Approved', 'Contract_Signed', 'Active'].includes(q.status) && (
+              <button onClick={promoteToProject}
+                      className="inline-flex items-center gap-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-md">
+                <Rocket size={14} /> Create Project
+              </button>
+            )}
+            {/* Status transition buttons */}
+            {(NEXT_STATUS[q.status] || []).map(action => {
+              const Icon = action.icon;
+              return (
+                <button key={action.to}
+                        onClick={() => changeStatus(action.to)}
+                        className={`inline-flex items-center gap-1 px-3 py-2 text-white text-sm rounded-md ${action.color}`}>
+                  <Icon size={14} /> {action.label}
+                </button>
+              );
+            })}
+            <button onClick={downloadPDF} disabled={downloading}
+                    className="inline-flex items-center gap-1 px-3 py-2 bg-gray-800 hover:bg-gray-900 disabled:opacity-60 text-white text-sm rounded-md">
+              <Download size={14} /> {downloading ? 'Generating…' : 'Download PDF'}
+            </button>
             <button onClick={() => window.print()} className="inline-flex items-center gap-1 px-3 py-2 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50">
-              <Printer size={14} /> Print / PDF
+              <Printer size={14} /> Print
             </button>
             <button onClick={() => navigate('/quotations/create')} className="inline-flex items-center gap-1 px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md">
               <Edit size={14} /> New Quotation
@@ -91,6 +185,8 @@ const QuotationDetail = () => {
         </div>
       </div>
 
+      {/* PDF root — wraps everything after the top action bar so html2pdf exports only the document */}
+      <div id="quotation-pdf-root">
       {/* Header card */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -110,7 +206,21 @@ const QuotationDetail = () => {
           </div>
           <div>
             <div className="text-[11px] text-gray-500 uppercase mb-1">Status</div>
-            <div className="inline-block text-[11px] px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-700">{q.status || 'Draft'}</div>
+            {(() => {
+              const s = q.status || 'Draft';
+              const cls = {
+                'Draft':           'bg-gray-100 text-gray-700',
+                'Under_Review':    'bg-amber-50 text-amber-700',
+                'Client_Review':   'bg-cyan-50 text-cyan-700',
+                'Sent':            'bg-blue-50 text-blue-700',
+                'Approved':        'bg-emerald-50 text-emerald-700',
+                'Contract_Signed': 'bg-purple-50 text-purple-700',
+                'Active':          'bg-orange-50 text-orange-700',
+                'Completed':       'bg-emerald-100 text-emerald-800',
+                'Cancelled':       'bg-gray-100 text-gray-500',
+              }[s] || 'bg-gray-100 text-gray-700';
+              return <div className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-medium ${cls}`}>{prettyStatus(s)}</div>;
+            })()}
           </div>
         </div>
       </div>
@@ -332,18 +442,27 @@ const QuotationDetail = () => {
                 <td className="border border-gray-300 px-3 py-2 w-64">REMARKS</td>
               </tr>
 
-              {annexure.main_sections.flatMap(sec => sec.items).map(it => (
-                <tr key={it.rule_id} className="align-top">
+              {annexure.main_sections.map(row => (
+                <tr key={row.seq} className="align-top">
                   <td className="border border-gray-300 px-3 py-2 font-semibold text-sm">
-                    {it.seq}. {it.title.toUpperCase()}
-                  </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm whitespace-pre-line">
-                    {it.description || '—'}
+                    {row.seq}. {row.title}
                   </td>
                   <td className="border border-gray-300 px-3 py-2 text-sm">
-                    {it.remarks.length === 0 ? '—' : (
+                    <div className="space-y-3">
+                      {row.rules.map(sub => (
+                        <div key={sub.rule_id}>
+                          {sub.sub_label && <div className="font-semibold text-xs uppercase tracking-wide">{sub.sub_label}:</div>}
+                          <div className="whitespace-pre-line">{sub.description || '—'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">
+                    {row.remarks.length === 0 ? '—' : (
                       <div className="space-y-1">
-                        {it.remarks.map((r, i) => <div key={i}>{r}</div>)}
+                        {row.remarks.map((r, i) => (
+                          <div key={i} className={r.startsWith('Anything above') || r.startsWith('Excluded') ? 'text-amber-800 text-xs' : ''}>{r}</div>
+                        ))}
                       </div>
                     )}
                   </td>
@@ -538,6 +657,7 @@ const QuotationDetail = () => {
           .print\\:break-inside-avoid { break-inside: avoid; }
         }
       `}</style>
+      </div> {/* end #quotation-pdf-root */}
     </div>
   );
 };

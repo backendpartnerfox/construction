@@ -11,12 +11,17 @@ const formatINR = (n) => {
 };
 
 const STATUS_STYLE = {
-  Draft:    'bg-gray-100 text-gray-700',
-  Sent:     'bg-blue-50 text-blue-700',
-  Approved: 'bg-emerald-50 text-emerald-700',
-  Rejected: 'bg-red-50 text-red-700',
-  Expired:  'bg-amber-50 text-amber-700',
+  Draft:             'bg-gray-100 text-gray-700',
+  Under_Review:      'bg-amber-50 text-amber-700',
+  Client_Review:     'bg-cyan-50 text-cyan-700',
+  Sent:              'bg-blue-50 text-blue-700',
+  Approved:          'bg-emerald-50 text-emerald-700',
+  Contract_Signed:   'bg-purple-50 text-purple-700',
+  Active:            'bg-orange-50 text-orange-700',
+  Completed:         'bg-emerald-100 text-emerald-800',
+  Cancelled:         'bg-gray-100 text-gray-500',
 };
+const prettyStatus = s => ({ 'Under_Review':'Under Review', 'Client_Review':'Client Review', 'Contract_Signed':'Contract Signed' }[s] || s || 'Draft');
 
 const QuotationsList = () => {
   const navigate = useNavigate();
@@ -123,7 +128,7 @@ const QuotationsList = () => {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[r.status] || 'bg-gray-100 text-gray-700'}`}>
-                      {r.status || 'Draft'}
+                      {prettyStatus(r.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-400"><Eye size={14} /></td>

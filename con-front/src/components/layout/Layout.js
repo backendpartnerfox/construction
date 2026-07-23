@@ -31,6 +31,7 @@ const Layout = ({ children }) => {
     { id: 'dashboard', label: 'Dashboard', icon: Building2, path: '/dashboard', active: location.pathname === '/dashboard' },
     { id: 'crm', label: 'CRM', icon: Users, path: '/crm', active: location.pathname === '/crm' },
     { id: 'leads', label: 'Leads', icon: Target, path: '/crm/leads', active: location.pathname.startsWith('/crm/leads') },
+    { id: 'enquiries', label: 'Enquiries', icon: Target, path: '/crm/enquiries', active: location.pathname.startsWith('/crm/enquiries') },
     { id: 'clients', label: 'Clients', icon: UserCheck, path: '/clients', active: location.pathname === '/clients' },
     { id: 'projects', label: 'Projects', icon: Building2, path: '/projects', active: location.pathname === '/projects' },
     { id: 'sales', label: 'Sales', icon: TrendingUp, path: '/sales', active: location.pathname === '/sales' },

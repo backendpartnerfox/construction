@@ -47,56 +47,22 @@ const router = express.Router();
  *               items:
  *                 type: object
  */
+// NOTE: `project_workflow_status` is a materialised view that only exposes
+// aggregation columns (project_id/name, total_phases, total_blocks,
+// total_selections, completed_selections, total_sequences, total_modules,
+// total_work_packages). The original CRUD endpoints below assume a full
+// table with updated_by/approved_by/is_current/workflow_stage columns —
+// those are wrong for the view and return 500. Simplify the GETs to
+// project against the actual view schema.
 router.get('/', async (req, res) => {
   const db = req.db;
-  const { project_id, workflow_stage, status, is_current } = req.query;
-  
+  const { project_id } = req.query;
   try {
-    let query = `
-      SELECT 
-        pws.*,
-        p.project_name,
-        p.project_code,
-        emp.first_name || ' ' || emp.last_name AS updated_by_name,
-        emp2.first_name || ' ' || emp2.last_name AS approved_by_name
-      FROM project_workflow_status pws
-      LEFT JOIN projects p ON pws.project_id = p.project_id
-      LEFT JOIN employees emp ON pws.updated_by = emp.employee_id
-      LEFT JOIN employees emp2 ON pws.approved_by = emp2.employee_id
-      WHERE 1=1
-    `;
-    
     const params = [];
-    let paramCount = 0;
-    
-    if (project_id) {
-      paramCount++;
-      query += ` AND pws.project_id = $${paramCount}`;
-      params.push(project_id);
-    }
-    
-    if (workflow_stage) {
-      paramCount++;
-      query += ` AND pws.workflow_stage = $${paramCount}`;
-      params.push(workflow_stage);
-    }
-    
-    if (status) {
-      paramCount++;
-      query += ` AND pws.status = $${paramCount}`;
-      params.push(status);
-    }
-    
-    if (is_current !== undefined) {
-      paramCount++;
-      query += ` AND pws.is_current = $${paramCount}`;
-      params.push(is_current);
-    }
-    
-    query += ' ORDER BY pws.project_id, pws.stage_order, pws.created_at DESC';
-    
-    const result = await db.query(query, params);
-    res.json(result.rows);
+    let where = '';
+    if (project_id) { params.push(project_id); where = 'WHERE project_id = $1'; }
+    const r = await db.query(`SELECT * FROM project_workflow_status ${where} ORDER BY project_id`, params);
+    res.json(r.rows);
   } catch (err) {
     console.error('Database query error:', err.message);
     res.status(500).json({ error: err.message });
@@ -124,29 +90,24 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Internal server error
  */
+// Fetch aggregation stats for one project. `id` is the project_id (the view
+// has no separate workflow_id column).
 router.get('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
-  
   try {
-    const result = await db.query(`
-      SELECT 
-        pws.*,
-        p.project_name,
-        p.project_code,
-        emp.first_name || ' ' || emp.last_name AS updated_by_name,
-        emp2.first_name || ' ' || emp2.last_name AS approved_by_name
-      FROM project_workflow_status pws
-      LEFT JOIN projects p ON pws.project_id = p.project_id
-      LEFT JOIN employees emp ON pws.updated_by = emp.employee_id
-      LEFT JOIN employees emp2 ON pws.approved_by = emp2.employee_id
-      WHERE pws.workflow_id = $1
-    `, [id]);
-    
+    const result = await db.query(
+      `SELECT * FROM project_workflow_status WHERE project_id = $1`,
+      [id]
+    );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Workflow status not found' });
+      // Not an error — return zeroed aggregation so the UI can render.
+      return res.json({
+        project_id: Number(id), project_name: null, total_phases: 0,
+        total_blocks: 0, total_selections: 0, completed_selections: 0,
+        total_sequences: 0, total_modules: 0, total_work_packages: 0,
+      });
     }
-    
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Database query error:', err.message);
