@@ -56,6 +56,7 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 app.use(express.urlencoded({ extended: true }));
+app.get('/api-docs.json', (req, res) => res.json(swaggerSpec));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'images')));

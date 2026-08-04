@@ -1,5 +1,13 @@
 const express = require('express');
 const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Lead Conversion
+ *   description: Auto-generated API docs for Lead Conversion
+ */
+
 const crypto = require('crypto');
 
 // ============================================================
@@ -135,6 +143,62 @@ router.use((req, res, next) => {
 // STEP 1: Create Razorpay Order
 // POST /api/leads/:id/create-payment-order
 // ============================================================
+/**
+
+ * @swagger
+
+ * /leads/{id}/create-payment-order:
+
+ *   post:
+
+ *     tags: [Lead Conversion]
+
+ *     summary: POST /leads/{id}/create-payment-order
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/:id/create-payment-order', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -280,6 +344,62 @@ router.post('/:id/create-payment-order', async (req, res) => {
 // STEP 2: Verify Payment & Convert Lead to Client
 // POST /api/leads/:id/verify-payment-and-convert
 // ============================================================
+/**
+
+ * @swagger
+
+ * /leads/{id}/verify-payment-and-convert:
+
+ *   post:
+
+ *     tags: [Lead Conversion]
+
+ *     summary: POST /leads/{id}/verify-payment-and-convert
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/:id/verify-payment-and-convert', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -494,6 +614,50 @@ router.post('/:id/verify-payment-and-convert', async (req, res) => {
 // GET: Payment order status for a lead
 // GET /api/leads/:id/payment-orders
 // ============================================================
+/**
+
+ * @swagger
+
+ * /leads/{id}/payment-orders:
+
+ *   get:
+
+ *     tags: [Lead Conversion]
+
+ *     summary: GET /leads/{id}/payment-orders
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/:id/payment-orders', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -515,6 +679,62 @@ router.get('/:id/payment-orders', async (req, res) => {
 // POST /api/leads/:id/convert-to-client
 // (Cash, Cheque, Bank Transfer, UPI - recorded manually)
 // ============================================================
+/**
+
+ * @swagger
+
+ * /leads/{id}/convert-to-client:
+
+ *   post:
+
+ *     tags: [Lead Conversion]
+
+ *     summary: POST /leads/{id}/convert-to-client
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/:id/convert-to-client', async (req, res) => {
   const db = req.db;
   const { id } = req.params;

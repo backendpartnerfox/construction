@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Sequencing
+ *   description: Auto-generated API docs for Sequencing
+ */
+
+
 // GET all sequencing records
+/**
+
+ * @swagger
+
+ * /sequencing/:
+
+ *   get:
+
+ *     tags: [Sequencing]
+
+ *     summary: GET /sequencing/
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/', async (req, res) => {
   const db = req.db;
   const { project_id } = req.query;
@@ -51,6 +91,50 @@ router.get('/', async (req, res) => {
 });
 
 // GET specific sequencing record by ID
+/**
+
+ * @swagger
+
+ * /sequencing/{id}:
+
+ *   get:
+
+ *     tags: [Sequencing]
+
+ *     summary: GET /sequencing/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -79,6 +163,50 @@ router.get('/:id', async (req, res) => {
 });
 
 // GET all sequencing records for a specific project
+/**
+
+ * @swagger
+
+ * /sequencing/project/{projectId}:
+
+ *   get:
+
+ *     tags: [Sequencing]
+
+ *     summary: GET /sequencing/project/{projectId}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: projectId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/project/:projectId', async (req, res) => {
   const db = req.db;
   const { projectId } = req.params;
@@ -106,6 +234,50 @@ router.get('/project/:projectId', async (req, res) => {
 });
 
 // GET all sequencing records for a specific block
+/**
+
+ * @swagger
+
+ * /sequencing/block/{blockId}:
+
+ *   get:
+
+ *     tags: [Sequencing]
+
+ *     summary: GET /sequencing/block/{blockId}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: blockId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/block/:blockId', async (req, res) => {
   const db = req.db;
   const { blockId } = req.params;
@@ -133,6 +305,50 @@ router.get('/block/:blockId', async (req, res) => {
 });
 
 // POST - Create a new sequencing record with smart defaults
+/**
+
+ * @swagger
+
+ * /sequencing/:
+
+ *   post:
+
+ *     tags: [Sequencing]
+
+ *     summary: POST /sequencing/
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/', async (req, res) => {
   const db = req.db;
   const { 
@@ -278,6 +494,62 @@ router.post('/', async (req, res) => {
 });
 
 // PUT - Update an existing sequencing record
+/**
+
+ * @swagger
+
+ * /sequencing/{id}:
+
+ *   put:
+
+ *     tags: [Sequencing]
+
+ *     summary: PUT /sequencing/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -390,6 +662,50 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE - Delete a sequencing record
+/**
+
+ * @swagger
+
+ * /sequencing/{id}:
+
+ *   delete:
+
+ *     tags: [Sequencing]
+
+ *     summary: DELETE /sequencing/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.delete('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -425,6 +741,50 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET sequences that can start for a project
+/**
+
+ * @swagger
+
+ * /sequencing/can-start/{projectId}:
+
+ *   get:
+
+ *     tags: [Sequencing]
+
+ *     summary: GET /sequencing/can-start/{projectId}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: projectId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/can-start/:projectId', async (req, res) => {
   const db = req.db;
   const { projectId } = req.params;
@@ -446,6 +806,50 @@ router.get('/can-start/:projectId', async (req, res) => {
 });
 
 // GET sequences with prerequisites met for a project
+/**
+
+ * @swagger
+
+ * /sequencing/prerequisites-met/{projectId}:
+
+ *   get:
+
+ *     tags: [Sequencing]
+
+ *     summary: GET /sequencing/prerequisites-met/{projectId}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: projectId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/prerequisites-met/:projectId', async (req, res) => {
   const db = req.db;
   const { projectId } = req.params;
@@ -467,6 +871,60 @@ router.get('/prerequisites-met/:projectId', async (req, res) => {
 });
 
 // GET sequences by status for a project
+/**
+
+ * @swagger
+
+ * /sequencing/status/{projectId}/{status}:
+
+ *   get:
+
+ *     tags: [Sequencing]
+
+ *     summary: GET /sequencing/status/{projectId}/{status}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: projectId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *       - in: path
+
+ *         name: status
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/status/:projectId/:status', async (req, res) => {
   const db = req.db;
   const { projectId, status } = req.params;

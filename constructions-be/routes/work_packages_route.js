@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Work Packages
+ *   description: Auto-generated API docs for Work Packages
+ */
+
+
 // GET all phases (for dropdown)
+/**
+
+ * @swagger
+
+ * /work_packages/phases:
+
+ *   get:
+
+ *     tags: [Work Packages]
+
+ *     summary: GET /work_packages/phases
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/phases', async (req, res) => {
   const db = req.db;
   try {
@@ -23,6 +63,38 @@ router.get('/phases', async (req, res) => {
 });
 
 // GET all vendors/contractors (for dropdown)
+/**
+
+ * @swagger
+
+ * /work_packages/contractors:
+
+ *   get:
+
+ *     tags: [Work Packages]
+
+ *     summary: GET /work_packages/contractors
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/contractors', async (req, res) => {
   const db = req.db;
   try {
@@ -44,6 +116,38 @@ router.get('/contractors', async (req, res) => {
 });
 
 // GET all employees (for team lead dropdown)
+/**
+
+ * @swagger
+
+ * /work_packages/employees:
+
+ *   get:
+
+ *     tags: [Work Packages]
+
+ *     summary: GET /work_packages/employees
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/employees', async (req, res) => {
   const db = req.db;
   try {
@@ -68,6 +172,38 @@ router.get('/employees', async (req, res) => {
 });
 
 // GET all work packages (supports project_id filter)
+/**
+
+ * @swagger
+
+ * /work_packages/:
+
+ *   get:
+
+ *     tags: [Work Packages]
+
+ *     summary: GET /work_packages/
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/', async (req, res) => {
   const db = req.db;
   const { project_id } = req.query;
@@ -131,6 +267,50 @@ router.get('/', async (req, res) => {
 });
 
 // GET specific work package by ID
+/**
+
+ * @swagger
+
+ * /work_packages/{id}:
+
+ *   get:
+
+ *     tags: [Work Packages]
+
+ *     summary: GET /work_packages/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -168,6 +348,50 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST - Create new work package
+/**
+
+ * @swagger
+
+ * /work_packages/:
+
+ *   post:
+
+ *     tags: [Work Packages]
+
+ *     summary: POST /work_packages/
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/', async (req, res) => {
   const db = req.db;
   const { 
@@ -320,6 +544,62 @@ router.post('/', async (req, res) => {
 });
 
 // PUT - Update work package
+/**
+
+ * @swagger
+
+ * /work_packages/{id}:
+
+ *   put:
+
+ *     tags: [Work Packages]
+
+ *     summary: PUT /work_packages/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -425,6 +705,50 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE - Delete work package
+/**
+
+ * @swagger
+
+ * /work_packages/{id}:
+
+ *   delete:
+
+ *     tags: [Work Packages]
+
+ *     summary: DELETE /work_packages/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.delete('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;

@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Modules
+ *   description: Auto-generated API docs for Modules
+ */
+
+
 // GET all vendors (for dropdown)
+/**
+
+ * @swagger
+
+ * /modules/vendors:
+
+ *   get:
+
+ *     tags: [Modules]
+
+ *     summary: GET /modules/vendors
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/vendors', async (req, res) => {
   const db = req.db;
   try {
@@ -23,6 +63,38 @@ router.get('/vendors', async (req, res) => {
 });
 
 // GET all modules (supports project_id filter)
+/**
+
+ * @swagger
+
+ * /modules/:
+
+ *   get:
+
+ *     tags: [Modules]
+
+ *     summary: GET /modules/
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/', async (req, res) => {
   const db = req.db;
   const { project_id } = req.query;
@@ -80,6 +152,50 @@ router.get('/', async (req, res) => {
 });
 
 // GET specific module by ID
+/**
+
+ * @swagger
+
+ * /modules/{id}:
+
+ *   get:
+
+ *     tags: [Modules]
+
+ *     summary: GET /modules/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -110,6 +226,50 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST - Create new module
+/**
+
+ * @swagger
+
+ * /modules/:
+
+ *   post:
+
+ *     tags: [Modules]
+
+ *     summary: POST /modules/
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/', async (req, res) => {
   const db = req.db;
   const { 
@@ -245,6 +405,62 @@ router.post('/', async (req, res) => {
 });
 
 // PUT - Update module
+/**
+
+ * @swagger
+
+ * /modules/{id}:
+
+ *   put:
+
+ *     tags: [Modules]
+
+ *     summary: PUT /modules/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -328,6 +544,50 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE - Delete module
+/**
+
+ * @swagger
+
+ * /modules/{id}:
+
+ *   delete:
+
+ *     tags: [Modules]
+
+ *     summary: DELETE /modules/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.delete('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;

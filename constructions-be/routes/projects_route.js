@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Projects
+ *   description: Auto-generated API docs for Projects
+ */
+
+
 // Get all projects
+/**
+
+ * @swagger
+
+ * /projects/:
+
+ *   get:
+
+ *     tags: [Projects]
+
+ *     summary: GET /projects/
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/', async (req, res) => {
     const db = req.db;
     try {
@@ -114,6 +154,38 @@ router.get('/', async (req, res) => {
 });
 
 // Get project statistics - MUST BE BEFORE /:id route
+/**
+
+ * @swagger
+
+ * /projects/statistics:
+
+ *   get:
+
+ *     tags: [Projects]
+
+ *     summary: GET /projects/statistics
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/statistics', async (req, res) => {
     const db = req.db;
     try {
@@ -146,6 +218,50 @@ router.get('/statistics', async (req, res) => {
 });
 
 // Get projects by client ID
+/**
+
+ * @swagger
+
+ * /projects/client/{clientId}:
+
+ *   get:
+
+ *     tags: [Projects]
+
+ *     summary: GET /projects/client/{clientId}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: clientId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/client/:clientId', async (req, res) => {
     const db = req.db;
     try {
@@ -211,6 +327,50 @@ router.get('/client/:clientId', async (req, res) => {
 });
 
 // Get single project
+/**
+
+ * @swagger
+
+ * /projects/{id}:
+
+ *   get:
+
+ *     tags: [Projects]
+
+ *     summary: GET /projects/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/:id', async (req, res) => {
     const db = req.db;
     try {
@@ -254,6 +414,50 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create project
+/**
+
+ * @swagger
+
+ * /projects/:
+
+ *   post:
+
+ *     tags: [Projects]
+
+ *     summary: POST /projects/
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/', async (req, res) => {
     const db = req.db;
     try {
@@ -333,6 +537,62 @@ router.post('/', async (req, res) => {
 });
 
 // Update project
+/**
+
+ * @swagger
+
+ * /projects/{id}:
+
+ *   put:
+
+ *     tags: [Projects]
+
+ *     summary: PUT /projects/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id', async (req, res) => {
     const db = req.db;
     try {
@@ -392,6 +652,50 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete/Cancel project
+/**
+
+ * @swagger
+
+ * /projects/{id}:
+
+ *   delete:
+
+ *     tags: [Projects]
+
+ *     summary: DELETE /projects/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.delete('/:id', async (req, res) => {
     const db = req.db;
     try {

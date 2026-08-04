@@ -1,5 +1,13 @@
 const express = require('express');
 const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Quotation Builder
+ *   description: Auto-generated API docs for Quotation Builder
+ */
+
 const { evaluateQuotation } = require('../lib/rules_engine');
 
 /**
@@ -150,6 +158,22 @@ async function computeQuotation(db, payload) {
 // -----------------------------------------------------------------------------
 // Site conditions catalog + rules
 // -----------------------------------------------------------------------------
+/**
+ * @swagger
+ * /quotations/site-conditions:
+ *   get:
+ *     tags: [Quotation Builder]
+ *     summary: GET /quotations/site-conditions
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/site-conditions', async (req, res) => {
   try {
     const r = await req.db.query(
@@ -158,6 +182,50 @@ router.get('/site-conditions', async (req, res) => {
     res.json(r.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+/**
+
+ * @swagger
+
+ * /quotations/site-conditions:
+
+ *   post:
+
+ *     tags: [Quotation Builder]
+
+ *     summary: POST /quotations/site-conditions
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
 
 router.post('/site-conditions', async (req, res) => {
   const { code, question, standard_answer, deviation_answer, triggers_rule_id, default_impact, sort_order } = req.body || {};
@@ -170,6 +238,34 @@ router.post('/site-conditions', async (req, res) => {
     res.status(201).json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+/**
+ * @swagger
+ * /quotations/site-conditions/{id}:
+ *   put:
+ *     tags: [Quotation Builder]
+ *     summary: PUT /quotations/site-conditions/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.put('/site-conditions/:id', async (req, res) => {
   const { id } = req.params;
   const { question, standard_answer, deviation_answer, triggers_rule_id, default_impact, sort_order } = req.body || {};
@@ -185,6 +281,28 @@ router.put('/site-conditions/:id', async (req, res) => {
     res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+/**
+ * @swagger
+ * /quotations/site-conditions/{id}:
+ *   delete:
+ *     tags: [Quotation Builder]
+ *     summary: DELETE /quotations/site-conditions/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.delete('/site-conditions/:id', async (req, res) => {
   try {
     const r = await req.db.query(`DELETE FROM site_conditions_catalog WHERE id = $1 RETURNING id`, [req.params.id]);
@@ -194,6 +312,28 @@ router.delete('/site-conditions/:id', async (req, res) => {
 });
 
 // Add-ons CRUD (list already exists at /addons)
+/**
+ * @swagger
+ * /quotations/addons:
+ *   post:
+ *     tags: [Quotation Builder]
+ *     summary: POST /quotations/addons
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/addons', async (req, res) => {
   const { package_id, name, description, unit, default_rate, inclusions, exclusions, sort_order } = req.body || {};
   if (!name || default_rate == null) return res.status(400).json({ error: 'name and default_rate required' });
@@ -205,6 +345,34 @@ router.post('/addons', async (req, res) => {
     res.status(201).json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+/**
+ * @swagger
+ * /quotations/addons/{id}:
+ *   put:
+ *     tags: [Quotation Builder]
+ *     summary: PUT /quotations/addons/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.put('/addons/:id', async (req, res) => {
   const { name, description, unit, default_rate, inclusions, exclusions, sort_order, is_active, package_id } = req.body || {};
   try {
@@ -220,6 +388,28 @@ router.put('/addons/:id', async (req, res) => {
     res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+/**
+ * @swagger
+ * /quotations/addons/{id}:
+ *   delete:
+ *     tags: [Quotation Builder]
+ *     summary: DELETE /quotations/addons/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.delete('/addons/:id', async (req, res) => {
   try {
     const r = await req.db.query(`DELETE FROM package_addons WHERE id = $1 RETURNING id`, [req.params.id]);
@@ -229,6 +419,22 @@ router.delete('/addons/:id', async (req, res) => {
 });
 
 // Qty per SFT CRUD
+/**
+ * @swagger
+ * /quotations/qty-ratios:
+ *   get:
+ *     tags: [Quotation Builder]
+ *     summary: GET /quotations/qty-ratios
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/qty-ratios', async (req, res) => {
   try {
     const r = await req.db.query(
@@ -240,6 +446,28 @@ router.get('/qty-ratios', async (req, res) => {
     res.json(r.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+/**
+ * @swagger
+ * /quotations/qty-ratios:
+ *   post:
+ *     tags: [Quotation Builder]
+ *     summary: POST /quotations/qty-ratios
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/qty-ratios', async (req, res) => {
   const { item_id, package_id, qty_per_sqft, wastage_pct, notes } = req.body || {};
   if (!item_id || qty_per_sqft == null) return res.status(400).json({ error: 'item_id and qty_per_sqft required' });
@@ -254,6 +482,34 @@ router.post('/qty-ratios', async (req, res) => {
     res.status(201).json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+/**
+ * @swagger
+ * /quotations/qty-ratios/{id}:
+ *   put:
+ *     tags: [Quotation Builder]
+ *     summary: PUT /quotations/qty-ratios/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.put('/qty-ratios/:id', async (req, res) => {
   const { qty_per_sqft, wastage_pct, notes } = req.body || {};
   try {
@@ -267,6 +523,28 @@ router.put('/qty-ratios/:id', async (req, res) => {
     res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+/**
+ * @swagger
+ * /quotations/qty-ratios/{id}:
+ *   delete:
+ *     tags: [Quotation Builder]
+ *     summary: DELETE /quotations/qty-ratios/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.delete('/qty-ratios/:id', async (req, res) => {
   try {
     const r = await req.db.query(`DELETE FROM item_qty_per_sqft WHERE id = $1 RETURNING id`, [req.params.id]);
@@ -274,6 +552,38 @@ router.delete('/qty-ratios/:id', async (req, res) => {
     res.json({ deleted: r.rows[0].id });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+/**
+
+ * @swagger
+
+ * /quotations/rules:
+
+ *   get:
+
+ *     tags: [Quotation Builder]
+
+ *     summary: GET /quotations/rules
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
 
 router.get('/rules', async (req, res) => {
   try {
@@ -290,6 +600,22 @@ router.get('/rules', async (req, res) => {
 });
 
 // Full rulebook + all tiers pivoted for the editor grid.
+/**
+ * @swagger
+ * /quotations/rules/grid:
+ *   get:
+ *     tags: [Quotation Builder]
+ *     summary: GET /quotations/rules/grid
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/rules/grid', async (req, res) => {
   try {
     const rules = (await req.db.query(
@@ -317,6 +643,39 @@ router.get('/rules/grid', async (req, res) => {
 });
 
 // Update or create a tier row for a specific rule+package.
+/**
+ * @swagger
+ * /quotations/rules/{rule_id}/tiers/{package_id}:
+ *   put:
+ *     tags: [Quotation Builder]
+ *     summary: PUT /quotations/rules/{rule_id}/tiers/{package_id}
+ *     parameters:
+ *       - in: path
+ *         name: rule_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: package_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.put('/rules/:rule_id/tiers/:package_id', async (req, res) => {
   const { rule_id, package_id } = req.params;
   const { included, value_cap, rate_cap, brand_options, overage_rate, notes } = req.body || {};
@@ -360,6 +719,22 @@ router.put('/rules/:rule_id/tiers/:package_id', async (req, res) => {
 });
 
 // List saved quotations. Supports ?client_id=, ?status=, ?limit=, ?offset=.
+/**
+ * @swagger
+ * /quotations/:
+ *   get:
+ *     tags: [Quotation Builder]
+ *     summary: GET /quotations/
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/', async (req, res) => {
   const db = req.db;
   const { client_id, status, limit = 50, offset = 0 } = req.query;
@@ -396,6 +771,22 @@ router.get('/', async (req, res) => {
 });
 
 // List add-ons available for building a quotation.
+/**
+ * @swagger
+ * /quotations/addons:
+ *   get:
+ *     tags: [Quotation Builder]
+ *     summary: GET /quotations/addons
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/addons', async (req, res) => {
   const db = req.db;
   const { package_id } = req.query;
@@ -425,6 +816,28 @@ router.get('/addons', async (req, res) => {
 //     architectural_fee_percentage?: number,   default 2.00
 //     other_design_fee_percentage?:  number,   default 2.50
 //   }
+/**
+ * @swagger
+ * /quotations/preview:
+ *   post:
+ *     tags: [Quotation Builder]
+ *     summary: POST /quotations/preview
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/preview', async (req, res) => {
   const db = req.db;
   try {
@@ -438,6 +851,28 @@ router.post('/preview', async (req, res) => {
 
 // Create + persist a quotation.
 // Body: same as /preview + client_id, project_title?, quotation_date?, valid_until?
+/**
+ * @swagger
+ * /quotations/:
+ *   post:
+ *     tags: [Quotation Builder]
+ *     summary: POST /quotations/
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/', async (req, res) => {
   const db = req.db;
   const body = req.body || {};
@@ -549,6 +984,28 @@ router.post('/', async (req, res) => {
 
 // Material Annexure — render-ready section list for a quotation
 // Returns modules → items with description + remarks lines derived from tier data.
+/**
+ * @swagger
+ * /quotations/{id}/annexure:
+ *   get:
+ *     tags: [Quotation Builder]
+ *     summary: GET /quotations/{id}/annexure
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/:id/annexure', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -822,6 +1279,62 @@ const ALLOWED_STATUS_TRANSITIONS = {
   'Cancelled':       [],
 };
 
+/**
+
+ * @swagger
+
+ * /quotations/{id}/status:
+
+ *   patch:
+
+ *     tags: [Quotation Builder]
+
+ *     summary: PATCH /quotations/{id}/status
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.patch('/:id/status', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -873,6 +1386,34 @@ router.patch('/:id/status', async (req, res) => {
 
 // Promote an approved / signed quotation into a project row.
 // Preserves the link via project_id ↔ client_quotation_id in metadata.
+/**
+ * @swagger
+ * /quotations/{id}/promote-to-project:
+ *   post:
+ *     tags: [Quotation Builder]
+ *     summary: POST /quotations/{id}/promote-to-project
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/:id/promote-to-project', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -973,6 +1514,28 @@ router.post('/:id/promote-to-project', async (req, res) => {
 });
 
 // Fetch a saved quotation with its child rows and recomputed totals.
+/**
+ * @swagger
+ * /quotations/{id}:
+ *   get:
+ *     tags: [Quotation Builder]
+ *     summary: GET /quotations/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;

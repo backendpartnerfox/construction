@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Client Requirement Package Item Choice Customise
+ *   description: Auto-generated API docs for Client Requirement Package Item Choice Customise
+ */
+
+
 const SELECT_FIELDS = `
   crpic.*,
   i.item_name,
@@ -18,6 +26,22 @@ const BASE_FROM = `
 `;
 
 // GET all
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/:
+ *   get:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: GET /client_requirement_package_item_choice_customise/
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/', async (req, res) => {
   try {
     const result = await req.db.query(
@@ -31,6 +55,28 @@ router.get('/', async (req, res) => {
 });
 
 // GET by client
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/client/{clientId}:
+ *   get:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: GET /client_requirement_package_item_choice_customise/client/{clientId}
+ *     parameters:
+ *       - in: path
+ *         name: clientId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/client/:clientId', async (req, res) => {
   try {
     const result = await req.db.query(
@@ -45,6 +91,28 @@ router.get('/client/:clientId', async (req, res) => {
 });
 
 // GET by project
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/project/{projectId}:
+ *   get:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: GET /client_requirement_package_item_choice_customise/project/{projectId}
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/project/:projectId', async (req, res) => {
   try {
     const result = await req.db.query(
@@ -59,6 +127,28 @@ router.get('/project/:projectId', async (req, res) => {
 });
 
 // GET by package
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/package/{packageId}:
+ *   get:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: GET /client_requirement_package_item_choice_customise/package/{packageId}
+ *     parameters:
+ *       - in: path
+ *         name: packageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/package/:packageId', async (req, res) => {
   try {
     const result = await req.db.query(
@@ -73,6 +163,28 @@ router.get('/package/:packageId', async (req, res) => {
 });
 
 // GET by item
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/item/{itemId}:
+ *   get:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: GET /client_requirement_package_item_choice_customise/item/{itemId}
+ *     parameters:
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/item/:itemId', async (req, res) => {
   try {
     const result = await req.db.query(
@@ -87,6 +199,28 @@ router.get('/item/:itemId', async (req, res) => {
 });
 
 // GET by id
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/{id}:
+ *   get:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: GET /client_requirement_package_item_choice_customise/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/:id', async (req, res) => {
   try {
     const result = await req.db.query(
@@ -104,6 +238,28 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST create
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/:
+ *   post:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: POST /client_requirement_package_item_choice_customise/
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/', async (req, res) => {
   const d = req.body || {};
   if (!d.item_id || !d.item_choice_id) {
@@ -125,6 +281,34 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/{id}:
+ *   put:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: PUT /client_requirement_package_item_choice_customise/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.put('/:id', async (req, res) => {
   const d = req.body || {};
   try {
@@ -153,6 +337,28 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE
+/**
+ * @swagger
+ * /client_requirement_package_item_choice_customise/{id}:
+ *   delete:
+ *     tags: [Client Requirement Package Item Choice Customise]
+ *     summary: DELETE /client_requirement_package_item_choice_customise/{id}
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
+ */
 router.delete('/:id', async (req, res) => {
   try {
     const result = await req.db.query(

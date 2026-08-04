@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Item Choices
+ *   description: Auto-generated API docs for Item Choices
+ */
+
+
 // Get all item choices (with latest active pricing joined via LEFT JOIN LATERAL)
+/**
+
+ * @swagger
+
+ * /item_choices/:
+
+ *   get:
+
+ *     tags: [Item Choices]
+
+ *     summary: GET /item_choices/
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/', async (req, res) => {
   const db = req.db;
   try {
@@ -37,6 +77,50 @@ router.get('/', async (req, res) => {
 });
 
 // Get item choices by item ID - CRITICAL FOR DROPDOWNS
+/**
+
+ * @swagger
+
+ * /item_choices/item/{itemId}:
+
+ *   get:
+
+ *     tags: [Item Choices]
+
+ *     summary: GET /item_choices/item/{itemId}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: itemId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/item/:itemId', async (req, res) => {
   const db = req.db;
   const { itemId } = req.params;
@@ -85,6 +169,50 @@ router.get('/item/:itemId', async (req, res) => {
 });
 
 // Get item choice by ID
+/**
+
+ * @swagger
+
+ * /item_choices/{id}:
+
+ *   get:
+
+ *     tags: [Item Choices]
+
+ *     summary: GET /item_choices/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -112,6 +240,50 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new item choice
+/**
+
+ * @swagger
+
+ * /item_choices/:
+
+ *   post:
+
+ *     tags: [Item Choices]
+
+ *     summary: POST /item_choices/
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/', async (req, res) => {
   const db = req.db;
   const {
@@ -170,6 +342,62 @@ router.post('/', async (req, res) => {
 });
 
 // Update item choice
+/**
+
+ * @swagger
+
+ * /item_choices/{id}:
+
+ *   put:
+
+ *     tags: [Item Choices]
+
+ *     summary: PUT /item_choices/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -230,6 +458,50 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete item choice
+/**
+
+ * @swagger
+
+ * /item_choices/{id}:
+
+ *   delete:
+
+ *     tags: [Item Choices]
+
+ *     summary: DELETE /item_choices/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.delete('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -262,6 +534,50 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Get item choices by brand
+/**
+
+ * @swagger
+
+ * /item_choices/brand/{brand}:
+
+ *   get:
+
+ *     tags: [Item Choices]
+
+ *     summary: GET /item_choices/brand/{brand}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: brand
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/brand/:brand', async (req, res) => {
   const db = req.db;
   const { brand } = req.params;
@@ -285,6 +601,38 @@ router.get('/brand/:brand', async (req, res) => {
 });
 
 // Get active item choices
+/**
+
+ * @swagger
+
+ * /item_choices/status/active:
+
+ *   get:
+
+ *     tags: [Item Choices]
+
+ *     summary: GET /item_choices/status/active
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/status/active', async (req, res) => {
   const db = req.db;
   
@@ -304,6 +652,38 @@ router.get('/status/active', async (req, res) => {
 });
 
 // Get default item choices
+/**
+
+ * @swagger
+
+ * /item_choices/status/default:
+
+ *   get:
+
+ *     tags: [Item Choices]
+
+ *     summary: GET /item_choices/status/default
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/status/default', async (req, res) => {
   const db = req.db;
   

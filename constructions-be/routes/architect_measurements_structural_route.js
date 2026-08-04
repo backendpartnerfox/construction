@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Architect Measurements Structural
+ *   description: Auto-generated API docs for Architect Measurements Structural
+ */
+
+
 // Get all structural measurements
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/:
+
+ *   get:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: GET /architect_measurements_structural/
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/', async (req, res) => {
   const db = req.db;
   try {
@@ -32,6 +72,50 @@ router.get('/', async (req, res) => {
 });
 
 // Get all structural measurements for a project
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/project/{projectId}:
+
+ *   get:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: GET /architect_measurements_structural/project/{projectId}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: projectId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/project/:projectId', async (req, res) => {
   const db = req.db;
   const { projectId } = req.params;
@@ -66,6 +150,50 @@ router.get('/project/:projectId', async (req, res) => {
 });
 
 // Get structural measurement by ID
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/{id}:
+
+ *   get:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: GET /architect_measurements_structural/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -113,6 +241,50 @@ router.get('/:id', async (req, res) => {
 });
 
 // SIMPLIFIED POST ROUTE - Just insert data
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/:
+
+ *   post:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: POST /architect_measurements_structural/
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/', async (req, res) => {
   const db = req.db;
   const {
@@ -206,6 +378,62 @@ router.post('/', async (req, res) => {
 });
 
 // VERIFY single measurement route (MUST come before /:id route)
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/{id}/verify:
+
+ *   put:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: PUT /architect_measurements_structural/{id}/verify
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id/verify', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -255,6 +483,62 @@ router.put('/:id/verify', async (req, res) => {
 });
 
 // VERIFY ALL measurements for a project route
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/project/{projectId}/verify-all:
+
+ *   put:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: PUT /architect_measurements_structural/project/{projectId}/verify-all
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: projectId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/project/:projectId/verify-all', async (req, res) => {
   const db = req.db;
   const { projectId } = req.params;
@@ -300,6 +584,62 @@ router.put('/project/:projectId/verify-all', async (req, res) => {
 });
 
 // UPDATE route (MUST come after specific routes like /:id/verify)
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/{id}:
+
+ *   put:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: PUT /architect_measurements_structural/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -387,6 +727,62 @@ router.put('/:id', async (req, res) => {
 });
 
 // VERIFY single measurement route
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/{id}/verify:
+
+ *   put:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: PUT /architect_measurements_structural/{id}/verify
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id/verify', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -436,6 +832,62 @@ router.put('/:id/verify', async (req, res) => {
 });
 
 // VERIFY ALL measurements for a project route
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/project/{projectId}/verify-all:
+
+ *   put:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: PUT /architect_measurements_structural/project/{projectId}/verify-all
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: projectId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/project/:projectId/verify-all', async (req, res) => {
   const db = req.db;
   const { projectId } = req.params;
@@ -481,6 +933,50 @@ router.put('/project/:projectId/verify-all', async (req, res) => {
 });
 
 // DELETE route
+/**
+
+ * @swagger
+
+ * /architect_measurements_structural/{id}:
+
+ *   delete:
+
+ *     tags: [Architect Measurements Structural]
+
+ *     summary: DELETE /architect_measurements_structural/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.delete('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;

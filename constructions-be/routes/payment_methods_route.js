@@ -6,11 +6,11 @@ const router = express.Router();
  * tags:
  *   name: PaymentMethods
  *   description: API for managing payment methods
- *
- * NOTE: Router is mounted at /api/payment_methods in server.js, so every
- * handler path below is RELATIVE to that mount point (no "/payment-methods"
- * prefix, and no hyphen-vs-underscore mismatch).
  */
+
+// NOTE: Router is mounted at /api/payment_methods in server.js, so every
+// handler path below is RELATIVE to that mount point (no "/payment-methods"
+// prefix, and no hyphen-vs-underscore mismatch).
 
 // ---------------------------------------------------------------------
 // GET /api/payment_methods/active   (must come before '/:id')

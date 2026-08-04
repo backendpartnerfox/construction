@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Selection Items
+ *   description: Auto-generated API docs for Selection Items
+ */
+
+
 // Get all selection items
+/**
+
+ * @swagger
+
+ * /selection_items/:
+
+ *   get:
+
+ *     tags: [Selection Items]
+
+ *     summary: GET /selection_items/
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/', async (req, res) => {
   const db = req.db;
   const { selection_item_id, item_id, selection_status, project_id } = req.query;
@@ -58,6 +98,50 @@ router.get('/', async (req, res) => {
 });
 
 // Get selection items by project ID - CRITICAL FIX
+/**
+
+ * @swagger
+
+ * /selection_items/project/{projectId}:
+
+ *   get:
+
+ *     tags: [Selection Items]
+
+ *     summary: GET /selection_items/project/{projectId}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: projectId
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/project/:projectId', async (req, res) => {
   const db = req.db;
   const { projectId } = req.params;
@@ -122,6 +206,50 @@ router.get('/project/:projectId', async (req, res) => {
 });
 
 // Get single selection item by ID
+/**
+
+ * @swagger
+
+ * /selection_items/{id}:
+
+ *   get:
+
+ *     tags: [Selection Items]
+
+ *     summary: GET /selection_items/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -155,6 +283,50 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new selection item
+/**
+
+ * @swagger
+
+ * /selection_items/:
+
+ *   post:
+
+ *     tags: [Selection Items]
+
+ *     summary: POST /selection_items/
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.post('/', async (req, res) => {
   const db = req.db;
   const {
@@ -217,6 +389,62 @@ router.post('/', async (req, res) => {
 });
 
 // Update selection item
+/**
+
+ * @swagger
+
+ * /selection_items/{id}:
+
+ *   put:
+
+ *     tags: [Selection Items]
+
+ *     summary: PUT /selection_items/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.put('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -275,6 +503,50 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete selection item
+/**
+
+ * @swagger
+
+ * /selection_items/{id}:
+
+ *   delete:
+
+ *     tags: [Selection Items]
+
+ *     summary: DELETE /selection_items/{id}
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.delete('/:id', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -307,6 +579,62 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Update selection status
+/**
+
+ * @swagger
+
+ * /selection_items/{id}/status:
+
+ *   patch:
+
+ *     tags: [Selection Items]
+
+ *     summary: PATCH /selection_items/{id}/status
+
+ *     parameters:
+
+ *       - in: path
+
+ *         name: id
+
+ *         required: true
+
+ *         schema:
+
+ *           type: string
+
+ *     requestBody:
+
+ *       required: false
+
+ *       content:
+
+ *         application/json:
+
+ *           schema:
+
+ *             type: object
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.patch('/:id/status', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
@@ -354,6 +682,38 @@ router.patch('/:id/status', async (req, res) => {
 });
 
 // Get pending selections
+/**
+
+ * @swagger
+
+ * /selection_items/status/pending:
+
+ *   get:
+
+ *     tags: [Selection Items]
+
+ *     summary: GET /selection_items/status/pending
+
+ *     responses:
+
+ *       200:
+
+ *         description: OK
+
+ *       400:
+
+ *         description: Bad request
+
+ *       404:
+
+ *         description: Not found
+
+ *       500:
+
+ *         description: Server error
+
+ */
+
 router.get('/status/pending', async (req, res) => {
   const db = req.db;
   
