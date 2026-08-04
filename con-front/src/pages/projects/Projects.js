@@ -15,7 +15,7 @@ import {
 import ProjectFormDialog from './components/ProjectFormDialog';
 
 // Use relative URL since we have setupProxy.js configured
-const API_BASE_URL = '';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:9000';
 
 const Projects = () => {
   const navigate = useNavigate();
