@@ -88,13 +88,14 @@ const MODULE_MAP = [
   // Execution
   ['/api/execution_tracking', 'execution'],
 
-  // Payments
+  // Payments (transactional — actual money flows)
   ['/api/payment_installments', 'payments'],
   ['/api/payment_reminders', 'payments'],
   ['/api/payment_orders', 'payments'],
-  ['/api/payment_methods', 'payments'],
-  ['/api/payment_types', 'payments'],
   ['/api/finance_payments', 'payments'],
+  // NOTE: payment_methods and payment_types are catalog/dropdown data
+  // (Cash, Cheque, UPI, ...). Deliberately NOT mapped so any signed-in
+  // user can read them — needed by forms across every module.
 
   // Purchase orders
   ['/api/po_line_items', 'purchase_orders'],
