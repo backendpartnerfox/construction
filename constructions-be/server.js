@@ -254,6 +254,28 @@ app.use((req, res, next) => {
   next();
 });
 
+// ---------------------------------------------------------------------------
+// RBAC middleware chain — runs after db injection so `req.db` is available.
+// ---------------------------------------------------------------------------
+// Every /api/* request goes through `authenticate` unless it's in the public
+// allowlist (login/register/health/docs). Then, if the URL matches a module
+// in module_map, `requireModule` enforces `<module>.view` for GET or
+// `<module>.edit` for writes. Admin role bypasses.
+const { authenticate } = require('./middleware/auth');
+const { requireModule } = require('./middleware/permissions');
+const { isPublic, moduleForUrl } = require('./middleware/module_map');
+
+app.use('/api', (req, res, next) => {
+  const full = '/api' + req.url.split('?')[0];
+  if (isPublic(full)) return next();
+  return authenticate(req, res, (err) => {
+    if (err) return next(err);
+    const mod = moduleForUrl(full);
+    if (!mod) return next();
+    return requireModule(mod)(req, res, next);
+  });
+});
+
 // ✅ Register routes
 app.use('/api/projects', projects);
 app.use('/api/items', items);

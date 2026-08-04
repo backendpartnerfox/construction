@@ -68,6 +68,7 @@ import PackagesManagement from './pages/admin/modules/PackagesManagement';
 import UsersManagement from './pages/admin/modules/UsersManagement';
 import RolesManagement from './pages/admin/modules/RolesManagement';
 import PermissionsManagement from './pages/admin/modules/PermissionsManagement';
+import RolePermissionMatrix from './pages/admin/RolePermissionMatrix';
 import RulebookEditor from './pages/admin/RulebookEditor';
 import QuotationConfigEditor from './pages/admin/QuotationConfigEditor';
 import ProjectBOQ from './pages/projects/boq/ProjectBOQ';
@@ -505,11 +506,11 @@ function App() {
               }
             />
             
-            {/* Admin Routes - Nested with proper URLs */}
+            {/* Admin Routes - Nested with proper URLs (admin role required) */}
             <Route
               path="/admin"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute role="admin">
                   <AdminDashboard />
                 </ProtectedRoute>
               }
@@ -547,6 +548,7 @@ function App() {
               <Route path="users" element={<UsersManagement />} />
               <Route path="roles" element={<RolesManagement />} />
               <Route path="permissions" element={<PermissionsManagement />} />
+              <Route path="role-matrix" element={<RolePermissionMatrix />} />
               
               {/* System Routes */}
               <Route path="system-settings" element={<SystemSettings />} />

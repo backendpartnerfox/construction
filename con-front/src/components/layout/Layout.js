@@ -21,27 +21,41 @@ import {
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission, hasRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Building2, path: '/dashboard', active: location.pathname === '/dashboard' },
-    { id: 'crm', label: 'CRM', icon: Users, path: '/crm', active: location.pathname === '/crm' },
-    { id: 'leads', label: 'Leads', icon: Target, path: '/crm/leads', active: location.pathname.startsWith('/crm/leads') },
-    { id: 'enquiries', label: 'Enquiries', icon: Target, path: '/crm/enquiries', active: location.pathname.startsWith('/crm/enquiries') },
-    { id: 'clients', label: 'Clients', icon: UserCheck, path: '/clients', active: location.pathname === '/clients' },
-    { id: 'projects', label: 'Projects', icon: Building2, path: '/projects', active: location.pathname === '/projects' },
-    { id: 'sales', label: 'Sales', icon: TrendingUp, path: '/sales', active: location.pathname === '/sales' },
-    
-    { id: 'architect', label: 'Architect', icon: Target, path: '/architect', active: location.pathname === '/architect' },
-    { id: 'packages', label: 'Packages', icon: Package, path: '/packages', active: location.pathname.startsWith('/packages') },
-    { id: 'quotations', label: 'Quotations', icon: FileText, path: '/quotations', active: location.pathname.startsWith('/quotations') },
-    { id: 'workflow', label: 'Workflow', icon: Users, path: '/workflow', active: location.pathname === '/workflow' },
-    { id: 'admin', label: 'Admin', icon: Settings, path: '/admin', active: location.pathname.startsWith('/admin') }
+  // Each item declares the permission it requires. `null` means visible to
+  // any signed-in user. Admin bypasses all checks (handled in hasPermission).
+  const allNavItems = [
+    { id: 'dashboard',  label: 'Dashboard',  icon: Building2,  path: '/dashboard',    perm: null },
+    { id: 'crm',        label: 'CRM',        icon: Users,      path: '/crm',          perm: 'crm.view' },
+    { id: 'leads',      label: 'Leads',      icon: Target,     path: '/crm/leads',    perm: 'crm.view' },
+    { id: 'enquiries',  label: 'Enquiries',  icon: Target,     path: '/crm/enquiries',perm: 'crm.view' },
+    { id: 'clients',    label: 'Clients',    icon: UserCheck,  path: '/clients',      perm: 'clients.view' },
+    { id: 'projects',   label: 'Projects',   icon: Building2,  path: '/projects',     perm: 'projects.view' },
+    { id: 'sales',      label: 'Sales',      icon: TrendingUp, path: '/sales',        perm: 'crm.view' },
+    { id: 'architect',  label: 'Architect',  icon: Target,     path: '/architect',    perm: 'drawings.view' },
+    { id: 'packages',   label: 'Packages',   icon: Package,    path: '/packages',     perm: 'packages.view' },
+    { id: 'quotations', label: 'Quotations', icon: FileText,   path: '/quotations',   perm: 'quotations.view' },
+    { id: 'workflow',   label: 'Workflow',   icon: Users,      path: '/workflow',     perm: 'execution.view' },
+    { id: 'admin',      label: 'Admin',      icon: Settings,   path: '/admin',        role: 'admin' },
   ];
+
+  const navigationItems = allNavItems
+    .filter(item => {
+      if (item.role) return hasRole(item.role);
+      if (item.perm) return hasPermission(item.perm);
+      return true;
+    })
+    .map(item => ({
+      ...item,
+      active: item.path === '/dashboard'
+        ? location.pathname === item.path
+        : location.pathname.startsWith(item.path),
+    }));
 
   const handleLogout = async () => {
     await logout();

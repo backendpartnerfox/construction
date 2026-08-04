@@ -106,13 +106,19 @@ router.post('/login', async (req, res) => {
       WHERE ur.user_id = $1
     `, [user.id]);
     
-    // Get user permissions (direct permissions only)
+    // Get user permissions — UNION of role-derived + directly assigned.
     const permissionsResult = await db.query(`
-      SELECT p.id, p.name AS permission_name, p.description, p.resource, p.action
+      SELECT DISTINCT p.id, p.name AS permission_name, p.description, p.resource, p.action
+      FROM permissions p
+      JOIN role_permissions rp ON rp.permission_id = p.id
+      JOIN user_roles ur       ON ur.role_id       = rp.role_id
+      WHERE ur.user_id = $1
+      UNION
+      SELECT DISTINCT p.id, p.name AS permission_name, p.description, p.resource, p.action
       FROM permissions p
       JOIN user_permissions up ON up.permission_id = p.id
       WHERE up.user_id = $1
-      ORDER BY p.resource, p.action
+      ORDER BY resource, action
     `, [user.id]);
     
     // Generate a secure random token
