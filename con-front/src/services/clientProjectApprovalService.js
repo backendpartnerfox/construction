@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use direct backend URL
-const API_URL = 'http://localhost:9000/api/client_project_approval';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:9000'}/api/client_project_approval`;
 
 // Create axios instance
 const api = axios.create({

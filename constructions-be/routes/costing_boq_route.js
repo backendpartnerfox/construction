@@ -65,15 +65,15 @@ router.get('/', async (req, res) => {
   try {
     let query = `
       SELECT cb.*, p.project_name, u.unit_name, e.element_name, i.item_name, 
-             ic.choice_name, v.vendor_name, us.username as created_by_name,
+             ic.display_name AS choice_name, v.vendor_name, us.username as created_by_name,
              us2.username as updated_by_name
       FROM costing_boq cb
-      LEFT JOIN projects p ON cb.project_id = p.id
-      LEFT JOIN units u ON cb.unit_id = u.id
-      LEFT JOIN elements e ON cb.element_id = e.id
-      LEFT JOIN items i ON cb.item_id = i.id
-      LEFT JOIN item_choices ic ON cb.choice_option_id = ic.id
-      LEFT JOIN vendors v ON cb.vendor_id = v.id
+      LEFT JOIN projects p ON cb.project_id = p.project_id
+      LEFT JOIN units u ON cb.unit_id = u.unit_id
+      LEFT JOIN elements e ON cb.element_id = e.element_id
+      LEFT JOIN items i ON cb.item_id = i.item_id
+      LEFT JOIN item_choices ic ON cb.choice_option_id = ic.choice_option_id
+      LEFT JOIN vendors v ON cb.vendor_id = v.vendor_id
       LEFT JOIN users us ON cb.created_by = us.id
       LEFT JOIN users us2 ON cb.updated_by = us2.id
     `;
@@ -134,15 +134,15 @@ router.get('/:id', async (req, res) => {
   try {
     const result = await db.query(`
       SELECT cb.*, p.project_name, u.unit_name, e.element_name, i.item_name, 
-             ic.choice_name, v.vendor_name, us.username as created_by_name,
+             ic.display_name AS choice_name, v.vendor_name, us.username as created_by_name,
              us2.username as updated_by_name
       FROM costing_boq cb
-      LEFT JOIN projects p ON cb.project_id = p.id
-      LEFT JOIN units u ON cb.unit_id = u.id
-      LEFT JOIN elements e ON cb.element_id = e.id
-      LEFT JOIN items i ON cb.item_id = i.id
-      LEFT JOIN item_choices ic ON cb.choice_option_id = ic.id
-      LEFT JOIN vendors v ON cb.vendor_id = v.id
+      LEFT JOIN projects p ON cb.project_id = p.project_id
+      LEFT JOIN units u ON cb.unit_id = u.unit_id
+      LEFT JOIN elements e ON cb.element_id = e.element_id
+      LEFT JOIN items i ON cb.item_id = i.item_id
+      LEFT JOIN item_choices ic ON cb.choice_option_id = ic.choice_option_id
+      LEFT JOIN vendors v ON cb.vendor_id = v.vendor_id
       LEFT JOIN users us ON cb.created_by = us.id
       LEFT JOIN users us2 ON cb.updated_by = us2.id
       WHERE cb.costing_boq_id = $1
@@ -195,13 +195,13 @@ router.get('/project/:projectId', async (req, res) => {
     
     const result = await db.query(`
       SELECT cb.*, u.unit_name, e.element_name, i.item_name, 
-             ic.choice_name, v.vendor_name
+             ic.display_name AS choice_name, v.vendor_name
       FROM costing_boq cb
-      LEFT JOIN units u ON cb.unit_id = u.id
-      LEFT JOIN elements e ON cb.element_id = e.id
-      LEFT JOIN items i ON cb.item_id = i.id
-      LEFT JOIN item_choices ic ON cb.choice_option_id = ic.id
-      LEFT JOIN vendors v ON cb.vendor_id = v.id
+      LEFT JOIN units u ON cb.unit_id = u.unit_id
+      LEFT JOIN elements e ON cb.element_id = e.element_id
+      LEFT JOIN items i ON cb.item_id = i.item_id
+      LEFT JOIN item_choices ic ON cb.choice_option_id = ic.choice_option_id
+      LEFT JOIN vendors v ON cb.vendor_id = v.vendor_id
       WHERE cb.project_id = $1
       ORDER BY cb.boq_code, cb.uid
     `, [projectId]);

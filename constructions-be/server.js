@@ -174,8 +174,9 @@ const packagesRoute = require('./routes/packages_route'); // ✅ Import packages
 const packageItemsMappingRoute = require('./routes/package_items_mapping_route'); // ✅ Import package_items_mapping route
 const enquirySelectionPackageRoute = require('./routes/enquiry_selection_package_route'); // ✅ Import enquiry_selection_package route
 const leadSelectionPackageRoute = require('./routes/lead_selection_package_route'); // ✅ Import lead_selection_package route
-const clientReqPackageCustomiseRoute = require('./routes/client_requirement_package_customise_route'); // ✅ Import client_requirement_package_customise route
-const enquiryReqPackageCustomiseRoute = require('./routes/enquiry_requirement_package_customise_route'); // ✅ Import enquiry_requirement_package_customise route
+// Removed: client_requirement_package_customise / enquiry_requirement_package_customise routes
+// The underlying tables (without _item_choice_ in the name) no longer exist; use the
+// _item_choice_customise_route variants instead.
 const leadReqPackageCustomiseRoute = require('./routes/lead_requirement_package_customise_route'); // ✅ Import lead_requirement_package_customise route
 const projectBOQDoorsRoute = require('./routes/project_boq_doors_route'); // ✅ Import project_boq_doors route
 const projectBOQWindowsRoute = require('./routes/project_boq_windows_route'); // ✅ Import project_boq_windows route
@@ -227,7 +228,7 @@ const items_electrical_calculations = require('./routes/items_electrical_calcula
 const items_structural_calculations = require('./routes/items_structural_calculations_route'); // ✅ Import items_structural_calculations route
 const items_windows_calculations = require('./routes/items_windows_calculations_route'); // ✅ Import items_windows_calculations route
 const execution_tracking = require('./routes/execution_tracking_route');
-const wall_openings_summary = require('./routes/wall_openings_summary_route');
+// Removed: wall_openings_summary route — target table/view no longer exists
 const costing_boq = require('./routes/costing_boq_route');
 const phase_summary = require('./routes/phase_summary_route');
 const phase_cost_summary = require('./routes/phase_cost_summary_route');
@@ -325,8 +326,7 @@ app.use('/api/packages', packagesRoute);
 app.use('/api/package_items_mapping', packageItemsMappingRoute);
 app.use('/api/enquiry_selection_package', enquirySelectionPackageRoute);
 app.use('/api/lead_selection_package', leadSelectionPackageRoute);
-app.use('/api/client_requirement_package_customise', clientReqPackageCustomiseRoute);
-app.use('/api/enquiry_requirement_package_customise', enquiryReqPackageCustomiseRoute);
+// Removed: /api/client_requirement_package_customise + /api/enquiry_requirement_package_customise mounts
 app.use('/api/lead_requirement_package_customise', leadReqPackageCustomiseRoute);
 app.use('/api/project_boq_doors', projectBOQDoorsRoute);
 app.use('/api/project_boq_windows', projectBOQWindowsRoute);
@@ -377,7 +377,7 @@ app.use('/api/items_electrical_calculations', items_electrical_calculations);
 app.use('/api/items_structural_calculations', items_structural_calculations);
 app.use('/api/items_windows_calculations', items_windows_calculations);
 app.use('/api/execution_tracking', execution_tracking);
-app.use('/api/wall_openings_summary', wall_openings_summary);
+// Removed: /api/wall_openings_summary mount
 app.use('/api/costing_boq', costing_boq);
 app.use('/api/phase_summary', phase_summary);
 app.use('/api/phase_cost_summary', phase_cost_summary);

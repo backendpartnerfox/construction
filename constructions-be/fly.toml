@@ -1,0 +1,21 @@
+app = "constructions-be"
+primary_region = "bom"
+
+[build]
+
+[env]
+  PORT = "9000"
+  NODE_ENV = "production"
+  DB_PORT = "5432"
+
+[http_service]
+  internal_port = 9000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512

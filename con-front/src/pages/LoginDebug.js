@@ -29,7 +29,7 @@ const LoginDebug = () => {
     try {
       addResult('Backend Health Check', 'Testing...', 'Checking if backend is running');
       
-      const healthResponse = await fetch('http://localhost:9000/health', {
+      const healthResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:9000'}/health`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });

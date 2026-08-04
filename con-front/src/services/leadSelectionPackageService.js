@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use direct backend URL - consistent with other services
-const API_URL = 'http://localhost:9000/api/lead_selection_package';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:9000'}/api/lead_selection_package`;
 
 // Create axios instance
 const api = axios.create({

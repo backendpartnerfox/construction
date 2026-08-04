@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:9000/api/client_quotations';
+const API_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:9000'}/api/client_quotations`;
 
 const api = axios.create({
   timeout: 30000,
