@@ -447,20 +447,38 @@ router.delete('/:id', async (req, res) => {
 router.post('/:id/convert-to-lead', async (req, res) => {
   const db = req.db;
   const { id } = req.params;
-  const { assigned_sales_person, assigned_architect, assigned_engineer, converted_by } = req.body;
+  const { assigned_architect, assigned_engineer } = req.body;
 
-  console.log('[Enquiries] Convert to lead - ID:', id);
+  console.log('[Enquiries] Convert to lead - ID:', id, 'by user:', req.user?.id);
 
   const enquiryId = parseInt(id);
   if (isNaN(enquiryId)) {
     return res.status(400).json({ success: false, error: 'Invalid enquiry ID' });
   }
 
-  if (!assigned_sales_person || !converted_by) {
-    return res.status(400).json({
-      success: false,
-      error: 'assigned_sales_person and converted_by are required'
-    });
+  // assigned_sales_person is a NOT NULL FK to employees.employee_id. Resolve
+  // the acting user's employee row by email (users<->employees are not
+  // directly linked). Fall back to the first employee if there's no match, or
+  // return a clear error if there are no employees at all.
+  let assigned_sales_person = req.body.assigned_sales_person;
+  if (!assigned_sales_person) {
+    if (req.user?.email) {
+      const empByEmail = await db.query(
+        'SELECT employee_id FROM employees WHERE email = $1 LIMIT 1',
+        [req.user.email]
+      );
+      if (empByEmail.rows.length > 0) assigned_sales_person = empByEmail.rows[0].employee_id;
+    }
+    if (!assigned_sales_person) {
+      const firstEmp = await db.query('SELECT employee_id FROM employees ORDER BY employee_id LIMIT 1');
+      if (firstEmp.rows.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'No employees in the system. Add at least one employee before converting enquiries to leads.'
+        });
+      }
+      assigned_sales_person = firstEmp.rows[0].employee_id;
+    }
   }
 
   try {
