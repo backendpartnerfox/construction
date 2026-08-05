@@ -133,6 +133,20 @@ function getRazorpayKeys() {
   return { keyId, keySecret };
 }
 
+// Resolve an employee_id for the acting user. `finance_payments.received_by`
+// and similar columns FK to employees.employee_id, but our authenticated
+// user id is from the users table (no users<->employees link column yet).
+// Strategy: match by email, fall back to the first employee, return null if
+// none exist (caller decides how to handle that).
+async function resolveActingEmployeeId(db, req) {
+  if (req.user?.email) {
+    const r = await db.query('SELECT employee_id FROM employees WHERE email = $1 LIMIT 1', [req.user.email]);
+    if (r.rows.length > 0) return r.rows[0].employee_id;
+  }
+  const first = await db.query('SELECT employee_id FROM employees ORDER BY employee_id LIMIT 1');
+  return first.rows.length > 0 ? first.rows[0].employee_id : null;
+}
+
 // Middleware
 router.use((req, res, next) => {
   console.log(`[Lead Conversion] ${req.method} ${req.originalUrl}`);
@@ -489,7 +503,12 @@ router.post('/:id/verify-payment-and-convert', async (req, res) => {
 
     // 5. Record in finance_payments
     const paymentNumber = `PAY-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
-    
+    const receivedByEmpId = await resolveActingEmployeeId(db, req);
+    if (!receivedByEmpId) {
+      await db.query('ROLLBACK');
+      return res.status(400).json({ success: false, error: 'No employees in system' });
+    }
+
     const financeResult = await db.query(`
       INSERT INTO finance_payments (
         payment_number, receipt_number, lead_id, payment_type_id, payment_method_id,
@@ -515,7 +534,7 @@ router.post('/:id/verify-payment-and-convert', async (req, res) => {
       true,
       true,
       true,
-      converted_by || 1,
+      receivedByEmpId,
       `Razorpay Order: ${razorpay_order_id}, Payment: ${razorpay_payment_id}`
     ]);
 
@@ -785,6 +804,12 @@ router.post('/:id/convert-to-client', async (req, res) => {
     const paymentNumber = `PAY-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
     const receiptNumber = `HAMS-RCP-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
 
+    const receivedByEmpId = await resolveActingEmployeeId(db, req);
+    if (!receivedByEmpId) {
+      await db.query('ROLLBACK');
+      return res.status(400).json({ success: false, error: 'No employees in system — add at least one before recording payments' });
+    }
+
     const financeResult = await db.query(`
       INSERT INTO finance_payments (
         payment_number, receipt_number, lead_id, payment_type_id, payment_method_id,
@@ -802,7 +827,7 @@ router.post('/:id/convert-to-client', async (req, res) => {
       'Lead conversion advance payment',
       'Advance - Contract Signing',
       'Received', true, true, false,
-      converted_by || 1,
+      receivedByEmpId,
       notes || null
     ]);
 
