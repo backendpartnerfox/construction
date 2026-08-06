@@ -506,17 +506,18 @@ function App() {
               }
             />
             
-            {/* Admin Routes - Nested with proper URLs (admin role required) */}
+            {/* Admin Routes - visible to admin OR anyone with a users/roles/rulebook/etc.
+                permission. AdminDashboard's sidebar hides sections the caller can't use. */}
             <Route
               path="/admin"
               element={
-                <ProtectedRoute role="admin">
+                <ProtectedRoute permission="users.view">
                   <AdminDashboard />
                 </ProtectedRoute>
               }
             >
-              {/* Default redirect to items */}
-              <Route index element={<Navigate to="/admin/items" replace />} />
+              {/* Default redirect — /admin/users works for admin AND hr; /admin/items required items.view (admin only). */}
+              <Route index element={<Navigate to="/admin/users" replace />} />
               
               {/* Master Data Routes */}
               <Route path="items" element={<ItemsManagement />} />

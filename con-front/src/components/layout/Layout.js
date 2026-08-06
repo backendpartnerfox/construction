@@ -41,7 +41,7 @@ const Layout = ({ children }) => {
     { id: 'packages',   label: 'Packages',   icon: Package,    path: '/packages',     perm: 'packages.view' },
     { id: 'quotations', label: 'Quotations', icon: FileText,   path: '/quotations',   perm: 'quotations.view' },
     { id: 'workflow',   label: 'Workflow',   icon: Users,      path: '/workflow',     perm: 'execution.view' },
-    { id: 'admin',      label: 'Admin',      icon: Settings,   path: '/admin',        role: 'admin' },
+    { id: 'admin',      label: 'Admin',      icon: Settings,   path: '/admin',        perm: 'users.view' },
   ];
 
   const navigationItems = allNavItems

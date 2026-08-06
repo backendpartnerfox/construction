@@ -261,9 +261,11 @@ WITH role_perm_pairs (role_name, perm_name) AS (
     ('lms', 'lms.view'), ('lms', 'lms.edit'),
     ('lms', 'hr.view'),
 
-    -- hr
+    -- hr — also manages users/roles/permissions (add users, assign roles, view permissions)
     ('hr', 'hr.view'), ('hr', 'hr.edit'),
-    ('hr', 'users.view'), ('hr', 'lms.view')
+    ('hr', 'lms.view'),
+    ('hr', 'users.view'), ('hr', 'users.edit'),
+    ('hr', 'roles.view'), ('hr', 'roles.edit')
 )
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id

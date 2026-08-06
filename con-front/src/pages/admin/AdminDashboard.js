@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { 
-  Database, Users, Package, Building, Wrench, DollarSign, 
+import {
+  Database, Users, Package, Building, Wrench, DollarSign,
   FileText, Settings, Truck, ClipboardList, Calendar,
   BarChart3, Layout, Boxes, ListChecks, GitBranch, Layers,
   Target, CheckCircle2, PackageCheck, ChevronLeft, ChevronRight,
   Shield, Key, BookOpen
 } from 'lucide-react';
+import { useAuth } from '../../utils/AuthContext';
 
 const AdminDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
+  const { hasPermission } = useAuth();
   
   // Get the current active module from the URL
   const getActiveModule = () => {
@@ -18,16 +20,19 @@ const AdminDashboard = () => {
     return path || 'items';
   };
 
-  const modules = [
+  // Each entry carries the permission it requires. Sections are hidden if the
+  // user has no visible children after filtering. Admin bypasses (hasPermission
+  // returns true for admin).
+  const allModules = [
     {
       id: 'master-data',
       label: 'Master Data',
       icon: Database,
       children: [
-        { id: 'items', label: 'Items', icon: Package, path: '/admin/items' },
-        { id: 'item-choices', label: 'Item Choices', icon: ListChecks, path: '/admin/item-choices' },
-        { id: 'elements', label: 'Elements', icon: Building, path: '/admin/elements' },
-        { id: 'element-item-mapping', label: 'Element-Item Mapping', icon: GitBranch, path: '/admin/element-item-mapping' },
+        { id: 'items',                label: 'Items',                icon: Package,    path: '/admin/items',                perm: 'items.view' },
+        { id: 'item-choices',         label: 'Item Choices',         icon: ListChecks, path: '/admin/item-choices',         perm: 'items.view' },
+        { id: 'elements',             label: 'Elements',             icon: Building,   path: '/admin/elements',             perm: 'items.view' },
+        { id: 'element-item-mapping', label: 'Element-Item Mapping', icon: GitBranch,  path: '/admin/element-item-mapping', perm: 'items.view' },
       ]
     },
     {
@@ -35,10 +40,10 @@ const AdminDashboard = () => {
       label: 'Vendor Management',
       icon: Truck,
       children: [
-        { id: 'vendor-types', label: 'Vendor Types', icon: ClipboardList, path: '/admin/vendor-types' },
-        { id: 'vendors', label: 'Vendors', icon: Truck, path: '/admin/vendors' },
-        { id: 'vendor-pricing', label: 'Vendor Pricing', icon: DollarSign, path: '/admin/vendor-pricing' },
-        { id: 'tmt-standards', label: 'TMT Standards', icon: Wrench, path: '/admin/tmt-standards' },
+        { id: 'vendor-types',   label: 'Vendor Types',   icon: ClipboardList, path: '/admin/vendor-types',   perm: 'vendors.view' },
+        { id: 'vendors',        label: 'Vendors',        icon: Truck,         path: '/admin/vendors',        perm: 'vendors.view' },
+        { id: 'vendor-pricing', label: 'Vendor Pricing', icon: DollarSign,    path: '/admin/vendor-pricing', perm: 'vendors.view' },
+        { id: 'tmt-standards',  label: 'TMT Standards',  icon: Wrench,        path: '/admin/tmt-standards',  perm: 'items.view' },
       ]
     },
     {
@@ -46,9 +51,9 @@ const AdminDashboard = () => {
       label: 'Package Management',
       icon: PackageCheck,
       children: [
-        { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages' },
-        { id: 'rulebook', label: 'Rulebook', icon: BookOpen, path: '/admin/rulebook' },
-        { id: 'quotation-config', label: 'Quotation Config', icon: Settings, path: '/admin/quotation-config' },
+        { id: 'packages',          label: 'Packages',          icon: Package,  path: '/admin/packages',          perm: 'packages.view' },
+        { id: 'rulebook',          label: 'Rulebook',          icon: BookOpen, path: '/admin/rulebook',          perm: 'rulebook.view' },
+        { id: 'quotation-config',  label: 'Quotation Config',  icon: Settings, path: '/admin/quotation-config',  perm: 'rulebook.view' },
       ]
     },
     {
@@ -56,8 +61,8 @@ const AdminDashboard = () => {
       label: 'Dimensions & Standards',
       icon: Layout,
       children: [
-        { id: 'door-dimensions', label: 'Door Dimensions', icon: Layout, path: '/admin/door-dimensions' },
-        { id: 'window-dimensions', label: 'Window Dimensions', icon: Layout, path: '/admin/window-dimensions' },
+        { id: 'door-dimensions',   label: 'Door Dimensions',   icon: Layout, path: '/admin/door-dimensions',   perm: 'items.view' },
+        { id: 'window-dimensions', label: 'Window Dimensions', icon: Layout, path: '/admin/window-dimensions', perm: 'items.view' },
       ]
     },
     {
@@ -65,18 +70,18 @@ const AdminDashboard = () => {
       label: 'Component Management',
       icon: Boxes,
       children: [
-        { id: 'components', label: 'Components', icon: Boxes, path: '/admin/components' },
-        //{ id: 'units', label: 'Units', icon: Layers, path: '/admin/units' },
+        { id: 'components', label: 'Components', icon: Boxes, path: '/admin/components', perm: 'items.view' },
       ]
     },
     {
       id: 'hr',
-      label: 'Human Resources',
+      label: 'Users & Roles',
       icon: Users,
       children: [
-        { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-        { id: 'roles', label: 'Roles', icon: Shield, path: '/admin/roles' },
-        { id: 'permissions', label: 'Permissions', icon: Key, path: '/admin/permissions' },
+        { id: 'users',        label: 'Users',                icon: Users,  path: '/admin/users',        perm: 'users.view' },
+        { id: 'roles',        label: 'Roles',                icon: Shield, path: '/admin/roles',        perm: 'roles.view' },
+        { id: 'permissions',  label: 'Permissions',          icon: Key,    path: '/admin/permissions',  perm: 'roles.view' },
+        { id: 'role-matrix',  label: 'Role × Permission Matrix', icon: Shield, path: '/admin/role-matrix', perm: 'roles.view' },
       ]
     },
     {
@@ -84,10 +89,15 @@ const AdminDashboard = () => {
       label: 'System',
       icon: Settings,
       children: [
-        { id: 'system-settings', label: 'System Settings', icon: Settings, path: '/admin/system-settings' },
+        { id: 'system-settings', label: 'System Settings', icon: Settings, path: '/admin/system-settings', perm: 'users.view' },
       ]
     }
   ];
+
+  // Filter: keep only children the user can access; drop groups that end up empty.
+  const modules = allModules
+    .map(g => ({ ...g, children: g.children.filter(c => hasPermission(c.perm)) }))
+    .filter(g => g.children.length > 0);
 
   const activeModule = getActiveModule();
 
