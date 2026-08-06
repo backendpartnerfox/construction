@@ -56,6 +56,81 @@ async function hashIfPlain(pw) {
  *                     format: date-time
  */
 
+// -----------------------------------------------------------------------
+// Current-user profile ("/me")
+// -----------------------------------------------------------------------
+// Must be declared BEFORE `/:id` so Express routes literal "me" to this
+// handler instead of treating "me" as an id.
+
+// GET /users/me — returns the authenticated user's row + role list + linked
+// employee row (matched by email) if one exists.
+router.get('/me', async (req, res) => {
+  if (!req.user?.id) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    const u = await req.db.query(
+      `SELECT u.id, u.username, u.email, u.first_name, u.last_name,
+              u.city_id, u.is_active, u.created_at,
+              c.name AS city_name, s.name AS state_name
+         FROM users u
+         LEFT JOIN cities c ON u.city_id = c.id
+         LEFT JOIN states s ON c.state_id = s.id
+        WHERE u.id = $1`,
+      [req.user.id]
+    );
+    if (u.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const user = u.rows[0];
+
+    const roles = (await req.db.query(
+      `SELECT r.id, r.name, r.description
+         FROM user_roles ur JOIN roles r ON r.id = ur.role_id
+        WHERE ur.user_id = $1
+        ORDER BY r.name`,
+      [req.user.id]
+    )).rows;
+
+    // Optional employee record — matched by email since there's no user_id link column yet.
+    let employee = null;
+    if (user.email) {
+      const e = await req.db.query(
+        `SELECT employee_id, first_name, last_name, email, phone, employee_code,
+                designation, department, address, city, state, date_of_birth, status
+           FROM employees WHERE email = $1 LIMIT 1`,
+        [user.email]
+      );
+      if (e.rows.length > 0) employee = e.rows[0];
+    }
+
+    res.json({ success: true, data: { user, roles, employee } });
+  } catch (err) {
+    console.error('[users/me] ', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /users/me — update the acting user's basic profile fields (first/last
+// name, email, city). Employee-scoped fields (designation, phone, etc.)
+// need a separate endpoint against /api/employees/:id.
+router.put('/me', async (req, res) => {
+  if (!req.user?.id) return res.status(401).json({ error: 'Not authenticated' });
+  const { first_name, last_name, email, city_id } = req.body || {};
+  try {
+    const r = await req.db.query(
+      `UPDATE users
+          SET first_name = COALESCE($1, first_name),
+              last_name  = COALESCE($2, last_name),
+              email      = COALESCE($3, email),
+              city_id    = COALESCE($4, city_id)
+        WHERE id = $5
+        RETURNING id, username, email, first_name, last_name, city_id`,
+      [first_name, last_name, email, city_id, req.user.id]
+    );
+    res.json({ success: true, data: r.rows[0] });
+  } catch (err) {
+    console.error('[users/me PUT] ', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get all users
 router.get('/', async (req, res) => {
   const db = req.db; 

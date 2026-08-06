@@ -16,6 +16,18 @@ const PUBLIC_ALLOWLIST = [
   '/api-docs.json',
 ];
 
+// Endpoints that require AUTH but no module gate. Any signed-in user can hit
+// them regardless of what permissions they hold — used for self-serve
+// endpoints like reading/updating your own profile.
+const AUTH_ONLY_ALLOWLIST = [
+  '/api/users/me',
+  '/api/user_sessions/logout',
+];
+
+function isAuthOnly(url) {
+  return AUTH_ONLY_ALLOWLIST.some(p => url === p || url.startsWith(p + '/') || url.startsWith(p + '?'));
+}
+
 // Longest-prefix wins. Sorted longest-first for the walker.
 const MODULE_MAP = [
   // CRM — leads + enquiries
@@ -143,4 +155,4 @@ function moduleForUrl(url) {
   return null;
 }
 
-module.exports = { PUBLIC_ALLOWLIST, MODULE_MAP, isPublic, moduleForUrl };
+module.exports = { PUBLIC_ALLOWLIST, AUTH_ONLY_ALLOWLIST, MODULE_MAP, isPublic, isAuthOnly, moduleForUrl };

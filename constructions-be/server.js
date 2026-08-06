@@ -263,13 +263,15 @@ app.use((req, res, next) => {
 // `<module>.edit` for writes. Admin role bypasses.
 const { authenticate } = require('./middleware/auth');
 const { requireModule } = require('./middleware/permissions');
-const { isPublic, moduleForUrl } = require('./middleware/module_map');
+const { isPublic, isAuthOnly, moduleForUrl } = require('./middleware/module_map');
 
 app.use('/api', (req, res, next) => {
   const full = '/api' + req.url.split('?')[0];
   if (isPublic(full)) return next();
   return authenticate(req, res, (err) => {
     if (err) return next(err);
+    // Self-serve endpoints (your own profile etc.) bypass module gate.
+    if (isAuthOnly(full)) return next();
     const mod = moduleForUrl(full);
     if (!mod) return next();
     return requireModule(mod)(req, res, next);

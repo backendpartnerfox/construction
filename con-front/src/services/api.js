@@ -115,38 +115,16 @@ export const projectsAPI = {
 // Users API calls
 export const usersAPI = {
   getProfile: async () => {
-    try {
-      const response = await api.get('/users/profile');
-      return response.data;
-    } catch (error) {
-      console.error('Profile API error:', error);
-      // Return default profile data if API fails
-      return {
-        success: true,
-        data: {
-          firstName: 'Admin',
-          lastName: 'User',
-          email: 'admin@constructpro.com',
-          phone: '+91-9876543210',
-          designation: 'System Administrator',
-          department: 'IT',
-          address: '123 Construction Street, Hyderabad, Telangana',
-          joinDate: '2023-01-15',
-          bio: 'Experienced system administrator with expertise in construction management systems.'
-        }
-      };
-    }
+    // Backend returns { user, employee, roles }. The old fallback silently
+    // returned hardcoded Admin data on any error, which meant every user saw
+    // the admin profile — removed. Callers should handle failure explicitly.
+    const response = await api.get('/users/me');
+    return response.data;
   },
-  
+
   updateProfile: async (userData) => {
-    try {
-      const response = await api.put('/users/profile', userData);
-      return response.data;
-    } catch (error) {
-      console.error('Profile update API error:', error);
-      // Simulate successful update
-      return { success: true, message: 'Profile updated successfully (offline mode)' };
-    }
+    const response = await api.put('/users/me', userData);
+    return response.data;
   },
   
   getAll: async () => {
