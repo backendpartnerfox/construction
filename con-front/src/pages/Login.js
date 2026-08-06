@@ -4,20 +4,71 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '../utils/AuthContext';
 import { Eye, EyeOff, Building2, Loader2 } from 'lucide-react';
 
+// One button per canonical role. Password convention is <username>123.
+// The color palette is applied round-robin — no per-role semantics.
+const QUICK_ROLES = [
+  { username: 'admin',               label: 'Admin' },
+  { username: 'crm',                 label: 'CRM' },
+  { username: 'sales',               label: 'Sales' },
+  { username: 'architect',           label: 'Architect' },
+  { username: 'designer',            label: 'Designer' },
+  { username: 'client',              label: 'Client' },
+  { username: 'sourcing',            label: 'Sourcing' },
+  { username: 'procurement',         label: 'Procurement' },
+  { username: 'vendor_onboarding',   label: 'Vendor Onboarding' },
+  { username: 'finance',             label: 'Finance' },
+  { username: 'finance_assistant',   label: 'Fin. Assistant' },
+  { username: 'vendor',              label: 'Vendor' },
+  { username: 'manager',             label: 'Manager' },
+  { username: 'execution_engineer',  label: 'Exec. Engineer' },
+  { username: 'structural_engineer', label: 'Struct. Engineer' },
+  { username: 'ep',                  label: 'E&P' },
+  { username: 'dispatch',            label: 'Dispatch' },
+  { username: 'project_manager',     label: 'Project Manager' },
+  { username: 'marketing',           label: 'Marketing' },
+  { username: 'inventory',           label: 'Inventory' },
+  { username: 'lms',                 label: 'LMS' },
+  { username: 'hr',                  label: 'HR' },
+];
+
+const CHIP_COLORS = [
+  'border-purple-400  text-purple-700  hover:bg-purple-50',
+  'border-emerald-400 text-emerald-700 hover:bg-emerald-50',
+  'border-sky-400     text-sky-700     hover:bg-sky-50',
+  'border-orange-400  text-orange-700  hover:bg-orange-50',
+  'border-pink-400    text-pink-700    hover:bg-pink-50',
+  'border-teal-400    text-teal-700    hover:bg-teal-50',
+  'border-amber-400   text-amber-700   hover:bg-amber-50',
+  'border-slate-500   text-slate-800   hover:bg-slate-50',
+];
+
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [quickLoading, setQuickLoading] = useState(null);
   const { login, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const from = location.state?.from?.pathname || '/dashboard';
 
   // ✅ ALWAYS call useForm at the top level (before any returns)
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
+
+  const quickLogin = async (username) => {
+    setQuickLoading(username);
+    setValue('username', username);
+    setValue('password', `${username}123`);
+    const result = await login({ username, password: `${username}123` });
+    if (result.success) {
+      navigate(from, { replace: true });
+    }
+    setQuickLoading(null);
+  };
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -52,7 +103,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-800 to-blue-600 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-xl w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center">
@@ -170,6 +221,36 @@ const Login = () => {
               </button>
             </div>
           </form>
+
+          {/* --- Quick Login (dev/demo shortcut) --- */}
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-xs uppercase tracking-wide text-slate-400">Quick Login</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {QUICK_ROLES.map((r, i) => {
+                const busy = quickLoading === r.username;
+                const color = CHIP_COLORS[i % CHIP_COLORS.length];
+                return (
+                  <button
+                    key={r.username}
+                    type="button"
+                    onClick={() => quickLogin(r.username)}
+                    disabled={loading || !!quickLoading}
+                    title={`${r.username} / ${r.username}123`}
+                    className={`text-xs font-medium py-1.5 px-2 rounded-md border-2 bg-white transition disabled:opacity-40 disabled:cursor-not-allowed ${color}`}
+                  >
+                    {busy ? <Loader2 className="animate-spin mx-auto h-4 w-4" /> : r.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-4 text-center text-xs text-slate-400">
+              Password format: <code className="font-mono text-slate-500">&lt;username&gt;123</code>
+            </p>
+          </div>
         </div>
       </div>
     </div>
