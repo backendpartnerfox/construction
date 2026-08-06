@@ -44,7 +44,7 @@ const CHIP_COLORS = [
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [quickLoading, setQuickLoading] = useState(null);
+  const [selectedRole, setSelectedRole] = useState(null);
   const { login, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -59,15 +59,13 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
-  const quickLogin = async (username) => {
-    setQuickLoading(username);
-    setValue('username', username);
-    setValue('password', `${username}123`);
-    const result = await login({ username, password: `${username}123` });
-    if (result.success) {
-      navigate(from, { replace: true });
-    }
-    setQuickLoading(null);
+  // Clicking a role chip only pre-fills the form. The user still has to
+  // hit "Sign in" to actually authenticate — matches the flow the user asked
+  // for so they can review or edit the credentials before submitting.
+  const pickRole = (username) => {
+    setSelectedRole(username);
+    setValue('username', username, { shouldValidate: true });
+    setValue('password', `${username}123`, { shouldValidate: true });
   };
 
   // Redirect if already authenticated
@@ -222,33 +220,36 @@ const Login = () => {
             </div>
           </form>
 
-          {/* --- Quick Login (dev/demo shortcut) --- */}
+          {/* --- Quick-select role (fills the form; then click Sign in) --- */}
           <div className="mt-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-1 h-px bg-slate-200" />
-              <span className="text-xs uppercase tracking-wide text-slate-400">Quick Login</span>
+              <span className="text-xs uppercase tracking-wide text-slate-400">Quick select role</span>
               <div className="flex-1 h-px bg-slate-200" />
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {QUICK_ROLES.map((r, i) => {
-                const busy = quickLoading === r.username;
+                const isSelected = selectedRole === r.username;
                 const color = CHIP_COLORS[i % CHIP_COLORS.length];
                 return (
                   <button
                     key={r.username}
                     type="button"
-                    onClick={() => quickLogin(r.username)}
-                    disabled={loading || !!quickLoading}
-                    title={`${r.username} / ${r.username}123`}
-                    className={`text-xs font-medium py-1.5 px-2 rounded-md border-2 bg-white transition disabled:opacity-40 disabled:cursor-not-allowed ${color}`}
+                    onClick={() => pickRole(r.username)}
+                    disabled={loading}
+                    title={`${r.username} / ${r.username}123 — fills the form, then click Sign in`}
+                    className={`text-xs font-medium py-1.5 px-2 rounded-md border-2 bg-white transition disabled:opacity-40 disabled:cursor-not-allowed ${color} ${isSelected ? 'ring-2 ring-offset-1 ring-blue-500 bg-blue-50/50' : ''}`}
                   >
-                    {busy ? <Loader2 className="animate-spin mx-auto h-4 w-4" /> : r.label}
+                    {r.label}
                   </button>
                 );
               })}
             </div>
             <p className="mt-4 text-center text-xs text-slate-400">
-              Password format: <code className="font-mono text-slate-500">&lt;username&gt;123</code>
+              {selectedRole
+                ? <>Selected <strong className="text-slate-600">{selectedRole}</strong> — click <strong>Sign in</strong> above to continue.</>
+                : <>Pick a role to auto-fill username &amp; password (format: <code className="font-mono text-slate-500">&lt;username&gt;123</code>), then click Sign in.</>
+              }
             </p>
           </div>
         </div>
