@@ -14,8 +14,11 @@ import {
 } from 'lucide-react';
 import { packagesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../utils/AuthContext';
 
 const Packages = () => {
+  const { hasPermission } = useAuth();
+  const canEdit = hasPermission('packages.edit');
   const navigate = useNavigate();
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -130,13 +133,15 @@ const Packages = () => {
             <IndianRupee className="h-4 w-4 mr-2" />
             View Rates
           </button>
-          <button
-            onClick={() => navigate('/packages/create')}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Package
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => navigate('/packages/create')}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Package
+            </button>
+          )}
         </div>
       </div>
 
@@ -164,7 +169,7 @@ const Packages = () => {
               ? 'Try adjusting your search criteria' 
               : 'Get started by creating your first package'}
           </p>
-          {!searchTerm && (
+          {!searchTerm && canEdit && (
             <button
               onClick={() => navigate('/packages/create')}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
@@ -222,28 +227,32 @@ const Packages = () => {
                           <Eye className="h-4 w-4" />
                           <span>View Details</span>
                         </button>
-                        <button
-                          onClick={() => {
-                            navigate(`/packages/${pkg.id}/edit`);
-                            setDropdownOpen(null);
-                          }}
-                          className="flex items-center space-x-2 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span>Edit Package</span>
-                        </button>
-                        <hr className="my-1" />
-                        <button
-                          onClick={() => {
-                            setSelectedPackage(pkg);
-                            setShowDeleteModal(true);
-                            setDropdownOpen(null);
-                          }}
-                          className="flex items-center space-x-2 w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span>Delete Package</span>
-                        </button>
+                        {canEdit && (
+                          <>
+                            <button
+                              onClick={() => {
+                                navigate(`/packages/${pkg.id}/edit`);
+                                setDropdownOpen(null);
+                              }}
+                              className="flex items-center space-x-2 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span>Edit Package</span>
+                            </button>
+                            <hr className="my-1" />
+                            <button
+                              onClick={() => {
+                                setSelectedPackage(pkg);
+                                setShowDeleteModal(true);
+                                setDropdownOpen(null);
+                              }}
+                              className="flex items-center space-x-2 w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span>Delete Package</span>
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>

@@ -543,4 +543,69 @@ router.post('/:id/convert-to-lead', async (req, res) => {
   }
 });
 
+// ============================================================
+// OPPORTUNITY STAGE (migration 007)
+// ============================================================
+// An "opportunity" is a qualified enquiry that CRM has flagged as worth
+// pursuing. Sales picks it up from the Opportunities list and converts to
+// a lead. The enquiry stays visible in the Enquiries list too — marking as
+// opportunity is a flag, not a move.
+
+// GET /enquiries/opportunities/list — enquiries where is_opportunity = true
+router.get('/opportunities/list', async (req, res) => {
+  try {
+    const r = await req.db.query(
+      `SELECT e.*, u.first_name AS marked_by_first, u.last_name AS marked_by_last
+         FROM enquiries e
+         LEFT JOIN users u ON u.id = e.opportunity_marked_by
+        WHERE e.is_opportunity = TRUE
+        ORDER BY e.opportunity_marked_at DESC NULLS LAST, e.enquiry_id DESC`
+    );
+    res.json({ success: true, data: r.rows });
+  } catch (err) {
+    console.error('[enquiries/opportunities] ', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /enquiries/:id/mark-opportunity — flag as opportunity
+router.post('/:id/mark-opportunity', async (req, res) => {
+  const { notes } = req.body || {};
+  try {
+    const r = await req.db.query(
+      `UPDATE enquiries
+          SET is_opportunity        = TRUE,
+              opportunity_marked_at = CURRENT_TIMESTAMP,
+              opportunity_marked_by = $1,
+              opportunity_notes     = COALESCE($2, opportunity_notes)
+        WHERE enquiry_id = $3
+        RETURNING enquiry_id, is_opportunity, opportunity_marked_at`,
+      [req.user?.id || null, notes || null, req.params.id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Enquiry not found' });
+    res.json({ success: true, data: r.rows[0] });
+  } catch (err) {
+    console.error('[enquiries/mark-opportunity] ', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /enquiries/:id/unmark-opportunity — un-flag
+router.post('/:id/unmark-opportunity', async (req, res) => {
+  try {
+    const r = await req.db.query(
+      `UPDATE enquiries
+          SET is_opportunity = FALSE
+        WHERE enquiry_id = $1
+        RETURNING enquiry_id, is_opportunity`,
+      [req.params.id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Enquiry not found' });
+    res.json({ success: true, data: r.rows[0] });
+  } catch (err) {
+    console.error('[enquiries/unmark-opportunity] ', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

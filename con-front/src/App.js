@@ -77,6 +77,9 @@ import ProjectPayments from './pages/projects/payments/ProjectPayments';
 import ProjectPurchaseOrders from './pages/projects/purchaseorders/ProjectPurchaseOrders';
 import EnquiriesList from './pages/crm/enquiries/EnquiriesList';
 import EnquiryDetail from './pages/crm/enquiries/EnquiryDetail';
+import OpportunitiesList from './pages/crm/opportunities/OpportunitiesList';
+import SupportTickets from './pages/crm/support/SupportTickets';
+import MeetingsCoordinate from './pages/crm/meetings/MeetingsCoordinate';
 
 // Admin Modules - Placeholders (only remaining ones)
 import {
@@ -201,6 +204,30 @@ function App() {
                   <Layout>
                     <EnquiryDetail />
                   </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crm/opportunities"
+              element={
+                <ProtectedRoute permission="opportunities.view">
+                  <Layout><OpportunitiesList /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crm/support"
+              element={
+                <ProtectedRoute permission="support.view">
+                  <Layout><SupportTickets /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crm/meetings"
+              element={
+                <ProtectedRoute permission="meetings.view">
+                  <Layout><MeetingsCoordinate /></Layout>
                 </ProtectedRoute>
               }
             />

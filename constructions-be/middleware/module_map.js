@@ -30,6 +30,14 @@ function isAuthOnly(url) {
 
 // Longest-prefix wins. Sorted longest-first for the walker.
 const MODULE_MAP = [
+  // Opportunities (list + mark/unmark endpoints live under /api/enquiries/*).
+  // These come BEFORE the /api/enquiries entry so they win the prefix match.
+  ['/api/enquiries/opportunities', 'opportunities'],
+
+  // Meetings + support (new modules)
+  ['/api/meetings',        'meetings'],
+  ['/api/support_tickets', 'support'],
+
   // CRM — leads + enquiries
   ['/api/lead_requirement_package_item_choice_customise', 'crm'],
   ['/api/lead_quotation_history', 'crm'],

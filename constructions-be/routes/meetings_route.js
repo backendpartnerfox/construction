@@ -188,44 +188,44 @@ router.post('/', async (req, res) => {
     target,
     to_be_included,
     date,
-    created_by,
     location,
-    meeting_id
+    meeting_id,
+    // New CRM-workflow fields (all optional, migration 007)
+    title,
+    related_entity_type,   // 'enquiry' | 'lead' | 'client' | 'project'
+    related_entity_id,
+    status,                // Scheduled|Confirmed|Completed|Cancelled|Rescheduled
+    notes,
   } = req.body;
 
-  try {
-    const query = `
-      INSERT INTO meetings (
-        type_of_meeting, project_id, source, target, 
-        to_be_included, date, created_by, location, meeting_id
-      ) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING *
-    `;
-    
-    const values = [
-      type_of_meeting,
-      project_id,
-      source,
-      target,
-      to_be_included,
-      date,
-      created_by,
-      location,
-      meeting_id
-    ];
+  // Prefer the authenticated user for coordinator + created_by; fall back to
+  // whatever the client sent for backwards compat.
+  const coordinator_user_id = req.body.coordinator_user_id || req.user?.id || null;
+  const created_by = req.body.created_by || req.user?.username || null;
 
-    const result = await db.query(query, values);
-    
-    res.status(201).json({
-      success: true,
-      data: result.rows[0]
-    });
+  try {
+    const result = await db.query(
+      `INSERT INTO meetings (
+         type_of_meeting, project_id, source, target,
+         to_be_included, date, created_by, location, meeting_id,
+         title, related_entity_type, related_entity_id, status, notes,
+         coordinator_user_id
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,COALESCE($13,'Scheduled'),$14,$15)
+       RETURNING *`,
+      [
+        type_of_meeting, project_id, source, target,
+        to_be_included, date, created_by, location, meeting_id,
+        title, related_entity_type, related_entity_id, status, notes,
+        coordinator_user_id,
+      ]
+    );
+
+    res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('Database error:', err.message);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: err.message 
+      error: err.message
     });
   }
 });
@@ -567,6 +567,54 @@ router.get('/past', async (req, res) => {
   } catch (queryErr) {
     console.error('Database query error:', queryErr.message);
     res.status(500).json({ error: queryErr.message });
+  }
+});
+
+// -----------------------------------------------------------------------
+// CRM-workflow helpers (migration 007)
+// -----------------------------------------------------------------------
+
+// GET /meetings/entity/:type/:id — filter by any related entity
+router.get('/entity/:type/:id', async (req, res) => {
+  const { type, id } = req.params;
+  if (!['enquiry','lead','client','project'].includes(type)) {
+    return res.status(400).json({ error: 'type must be enquiry|lead|client|project' });
+  }
+  try {
+    const r = await req.db.query(
+      `SELECT * FROM meetings
+        WHERE related_entity_type = $1 AND related_entity_id = $2
+        ORDER BY date DESC NULLS LAST, id DESC`,
+      [type, id]
+    );
+    res.json({ success: true, data: r.rows });
+  } catch (err) {
+    console.error('[meetings/entity] ', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// PATCH /meetings/:id/status — quick status update (Scheduled -> Confirmed etc.)
+router.patch('/:id/status', async (req, res) => {
+  const { status, notes } = req.body || {};
+  const ALLOWED = ['Scheduled','Confirmed','Completed','Cancelled','Rescheduled'];
+  if (!ALLOWED.includes(status)) {
+    return res.status(400).json({ error: `status must be one of ${ALLOWED.join(', ')}` });
+  }
+  try {
+    const r = await req.db.query(
+      `UPDATE meetings
+          SET status = $1,
+              notes  = COALESCE($2, notes)
+        WHERE id = $3
+        RETURNING *`,
+      [status, notes || null, req.params.id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Meeting not found' });
+    res.json({ success: true, data: r.rows[0] });
+  } catch (err) {
+    console.error('[meetings/:id/status] ', err.message);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

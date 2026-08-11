@@ -100,6 +100,21 @@ const EnquiriesList = () => {
     }
   };
 
+  const toggleOpportunity = async (row) => {
+    try {
+      if (row.is_opportunity) {
+        await api.post(`/enquiries/${row.enquiry_id}/unmark-opportunity`);
+        toast.success('Removed from opportunities');
+      } else {
+        await api.post(`/enquiries/${row.enquiry_id}/mark-opportunity`);
+        toast.success('Marked as opportunity — visible to Sales');
+      }
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update');
+    }
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-start mb-6 gap-4">
@@ -184,11 +199,21 @@ const EnquiriesList = () => {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 items-center">
                     <button title="View" onClick={() => navigate(`/crm/enquiries/${r.enquiry_id}`)}
                             className="p-1 text-gray-500 hover:text-orange-600"><Eye size={14} /></button>
+                    <button
+                      title={r.is_opportunity ? 'Remove from Opportunities' : 'Mark as Opportunity (move to Sales)'}
+                      onClick={() => toggleOpportunity(r)}
+                      className={`p-1 ${r.is_opportunity ? 'text-purple-600 hover:text-purple-800' : 'text-gray-500 hover:text-purple-600'}`}
+                    >
+                      <UserPlus size={14} />
+                    </button>
                     <button title="Convert to Lead" onClick={() => convertToLead(r.enquiry_id, r.contact_person_name)}
                             className="p-1 text-gray-500 hover:text-emerald-600"><Target size={14} /></button>
+                    {r.is_opportunity && (
+                      <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">OPP</span>
+                    )}
                   </div>
                 </td>
               </tr>
