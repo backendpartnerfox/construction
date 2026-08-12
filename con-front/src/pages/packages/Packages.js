@@ -313,12 +313,14 @@ const Packages = () => {
                   >
                     View Details
                   </button>
-                  <button
-                    onClick={() => navigate(`/packages/${pkg.id}/edit`)}
-                    className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  >
-                    Edit
-                  </button>
+                  {canEdit && (
+                    <button
+                      onClick={() => navigate(`/packages/${pkg.id}/edit`)}
+                      className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    >
+                      Edit
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

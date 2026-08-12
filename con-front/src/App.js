@@ -512,29 +512,29 @@ function App() {
             <Route
               path="/packages/create"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute permission="packages.edit">
                   <Layout>
                     <CreatePackage />
                   </Layout>
                 </ProtectedRoute>
               }
             />
-            
+
             <Route
               path="/packages/:id"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute permission="packages.view">
                   <Layout>
                     <PackageDetails />
                   </Layout>
                 </ProtectedRoute>
               }
             />
-            
+
             <Route
               path="/packages/:id/edit"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute permission="packages.edit">
                   <Layout>
                     <EditPackage />
                   </Layout>

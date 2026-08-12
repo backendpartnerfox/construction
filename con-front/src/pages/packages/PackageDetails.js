@@ -20,12 +20,15 @@ import {
 import { packagesAPI } from '../../services/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../utils/AuthContext';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:9000';
 
 const PackageDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
+  const canEdit = hasPermission('packages.edit');
   const [packageData, setPackageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [packageItems, setPackageItems] = useState([]);
@@ -224,13 +227,15 @@ const PackageDetails = () => {
             </div>
           </div>
         </div>
-        <button
-          onClick={() => navigate(`/packages/${id}/edit`)}
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-        >
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Package
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => navigate(`/packages/${id}/edit`)}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Package
+          </button>
+        )}
       </div>
 
       {/* Package Overview */}
@@ -344,13 +349,15 @@ const PackageDetails = () => {
               {packageItems.length} items
             </span>
           </div>
-          <button
-            onClick={() => setShowAddItem(!showAddItem)}
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-          >
-            {showAddItem ? <X className="h-4 w-4 mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
-            {showAddItem ? 'Cancel' : 'Add Item'}
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => setShowAddItem(!showAddItem)}
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            >
+              {showAddItem ? <X className="h-4 w-4 mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+              {showAddItem ? 'Cancel' : 'Add Item'}
+            </button>
+          )}
         </div>
 
         {/* Add Item Form */}
@@ -471,13 +478,15 @@ const PackageDetails = () => {
                                 </p>
                               </div>
                             </div>
-                            <button
-                              onClick={() => handleRemoveItem(mapping.id, mapping.item_name)}
-                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors flex-shrink-0"
-                              title="Remove from package"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                            {canEdit && (
+                              <button
+                                onClick={() => handleRemoveItem(mapping.id, mapping.item_name)}
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors flex-shrink-0"
+                                title="Remove from package"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
