@@ -34,9 +34,10 @@ const MODULE_MAP = [
   // These come BEFORE the /api/enquiries entry so they win the prefix match.
   ['/api/enquiries/opportunities', 'opportunities'],
 
-  // Meetings + support (new modules)
+  // Meetings + support + site_visits (new modules)
   ['/api/meetings',        'meetings'],
   ['/api/support_tickets', 'support'],
+  ['/api/site_visits',     'site_visits'],
 
   // CRM — leads + enquiries
   ['/api/lead_requirement_package_item_choice_customise', 'crm'],

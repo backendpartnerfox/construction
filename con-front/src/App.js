@@ -80,6 +80,8 @@ import EnquiryDetail from './pages/crm/enquiries/EnquiryDetail';
 import OpportunitiesList from './pages/crm/opportunities/OpportunitiesList';
 import SupportTickets from './pages/crm/support/SupportTickets';
 import MeetingsCoordinate from './pages/crm/meetings/MeetingsCoordinate';
+import PackageCustomize from './pages/sales/packages/PackageCustomize';
+import SiteVisits from './pages/sales/site-visits/SiteVisits';
 
 // Admin Modules - Placeholders (only remaining ones)
 import {
@@ -228,6 +230,24 @@ function App() {
               element={
                 <ProtectedRoute permission="meetings.view">
                   <Layout><MeetingsCoordinate /></Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Sales-specific pages */}
+            <Route
+              path="/sales/packages/customise"
+              element={
+                <ProtectedRoute permission="packages.customise">
+                  <Layout><PackageCustomize /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sales/site-visits"
+              element={
+                <ProtectedRoute permission="site_visits.view">
+                  <Layout><SiteVisits /></Layout>
                 </ProtectedRoute>
               }
             />

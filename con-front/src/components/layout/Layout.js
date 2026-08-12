@@ -30,20 +30,30 @@ const Layout = ({ children }) => {
   // Each item declares the permission it requires. `null` means visible to
   // any signed-in user. Admin bypasses all checks (handled in hasPermission).
   const allNavItems = [
-    { id: 'dashboard',     label: 'Dashboard',     icon: Building2,  path: '/dashboard',        perm: null },
-    { id: 'enquiries',     label: 'Enquiries',     icon: Target,     path: '/crm/enquiries',    perm: 'crm.view' },
-    { id: 'opportunities', label: 'Opportunities', icon: Target,     path: '/crm/opportunities',perm: 'opportunities.view' },
-    { id: 'leads',         label: 'Leads',         icon: Target,     path: '/crm/leads',        perm: 'crm.view' },
-    { id: 'clients',       label: 'Clients',       icon: UserCheck,  path: '/clients',          perm: 'clients.view' },
-    { id: 'support',       label: 'Support',       icon: FileText,   path: '/crm/support',      perm: 'support.view' },
-    { id: 'meetings',      label: 'Meetings',      icon: Users,      path: '/crm/meetings',     perm: 'meetings.view' },
-    { id: 'sales',         label: 'Sales',         icon: TrendingUp, path: '/sales',            perm: 'crm.view' },
-    { id: 'projects',      label: 'Projects',      icon: Building2,  path: '/projects',         perm: 'projects.view' },
-    { id: 'architect',     label: 'Architect',     icon: Target,     path: '/architect',        perm: 'drawings.view' },
-    { id: 'packages',      label: 'Packages',      icon: Package,    path: '/packages',         perm: 'packages.view' },
-    { id: 'quotations',    label: 'Quotations',    icon: FileText,   path: '/quotations',       perm: 'quotations.view' },
-    { id: 'workflow',      label: 'Workflow',      icon: Users,      path: '/workflow',         perm: 'execution.view' },
-    { id: 'admin',         label: 'Admin',         icon: Settings,   path: '/admin',            perm: 'users.view' },
+    { id: 'dashboard',     label: 'Dashboard',       icon: Building2,  path: '/dashboard',                perm: null },
+
+    // CRM workflow (Enquiries → Opportunities → Leads → Clients)
+    { id: 'enquiries',     label: 'Enquiries',       icon: Target,     path: '/crm/enquiries',            perm: 'crm.view' },
+    { id: 'opportunities', label: 'Opportunities',   icon: Target,     path: '/crm/opportunities',        perm: 'opportunities.view' },
+    { id: 'leads',         label: 'Leads',           icon: Target,     path: '/crm/leads',                perm: 'crm.view' },
+    { id: 'clients',       label: 'Clients',         icon: UserCheck,  path: '/clients',                  perm: 'clients.view' },
+
+    // Sales-specific
+    { id: 'quotations',    label: 'Quotations',      icon: FileText,   path: '/quotations',               perm: 'quotations.view' },
+    { id: 'packages',      label: 'Packages',        icon: Package,    path: '/packages',                 perm: 'packages.view' },
+    { id: 'pkg-customise', label: 'Customise Package',icon: Package,   path: '/sales/packages/customise', perm: 'packages.customise' },
+
+    // Coordination
+    { id: 'support',       label: 'Support',         icon: FileText,   path: '/crm/support',              perm: 'support.view' },
+    { id: 'meetings',      label: 'Meetings',        icon: Users,      path: '/crm/meetings',             perm: 'meetings.view' },
+    { id: 'site-visits',   label: 'Site Visits',     icon: Target,     path: '/sales/site-visits',        perm: 'site_visits.view' },
+
+    // Other roles
+    { id: 'sales',         label: 'Sales',           icon: TrendingUp, path: '/sales',                    perm: 'crm.view' },
+    { id: 'projects',      label: 'Projects',        icon: Building2,  path: '/projects',                 perm: 'projects.view' },
+    { id: 'architect',     label: 'Architect',       icon: Target,     path: '/architect',                perm: 'drawings.view' },
+    { id: 'workflow',      label: 'Workflow',        icon: Users,      path: '/workflow',                 perm: 'execution.view' },
+    { id: 'admin',         label: 'Admin',           icon: Settings,   path: '/admin',                    perm: 'users.view' },
   ];
 
   const navigationItems = allNavItems
