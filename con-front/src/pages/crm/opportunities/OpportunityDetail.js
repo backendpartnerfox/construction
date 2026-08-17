@@ -41,10 +41,11 @@ export default function OpportunityDetail() {
 
   const [enq, setEnq] = useState(null);
   const [actions, setActions] = useState([]);
+  const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingPlot, setSavingPlot] = useState(false);
   const [openAction, setOpenAction] = useState(null); // key of currently expanded action form
-  const [actionForm, setActionForm] = useState({ description: '', scheduled_at: '' });
+  const [actionForm, setActionForm] = useState({ description: '', scheduled_at: '', package_id: '' });
   const [creating, setCreating] = useState(false);
   const [plot, setPlot] = useState({
     plot_length: '', plot_width: '', plot_dimensions_unit: 'ft',
@@ -54,9 +55,10 @@ export default function OpportunityDetail() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [eRes, aRes] = await Promise.all([
+      const [eRes, aRes, pRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/enquiries/${id}`),
         axios.get(`${API_BASE_URL}/opportunity_actions/enquiry/${id}`),
+        axios.get(`${API_BASE_URL}/packages`),
       ]);
       const e = eRes.data?.data || eRes.data;
       setEnq(e);
@@ -68,6 +70,7 @@ export default function OpportunityDetail() {
         floor_configuration: e?.floor_configuration || '',
       });
       setActions(aRes.data?.data || []);
+      setPackages(pRes.data?.data || pRes.data || []);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to load opportunity');
     } finally {
@@ -105,6 +108,11 @@ export default function OpportunityDetail() {
   };
 
   const submitAction = async (actionType) => {
+    // Quotation must include a package
+    if (actionType === 'quotation' && !actionForm.package_id) {
+      toast.error('Please pick a package for the quotation');
+      return;
+    }
     setCreating(true);
     try {
       await axios.post(`${API_BASE_URL}/opportunity_actions`, {
@@ -112,11 +120,12 @@ export default function OpportunityDetail() {
         action_type: actionType,
         description: actionForm.description || null,
         scheduled_at: actionForm.scheduled_at || null,
+        package_id: actionForm.package_id ? Number(actionForm.package_id) : null,
       });
       const meta = ACTIONS.find(a => a.key === actionType);
       toast.success(`${meta?.label} created — assigned to ${meta?.role.replace('_', ' ')}`);
       setOpenAction(null);
-      setActionForm({ description: '', scheduled_at: '' });
+      setActionForm({ description: '', scheduled_at: '', package_id: '' });
       load();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create action');
@@ -232,7 +241,10 @@ export default function OpportunityDetail() {
             <button
               key={a.key}
               disabled={!canAct}
-              onClick={() => setOpenAction(openAction === a.key ? null : a.key)}
+              onClick={() => {
+                setActionForm({ description: '', scheduled_at: '', package_id: '' });
+                setOpenAction(openAction === a.key ? null : a.key);
+              }}
               className={`p-4 rounded-lg border-2 bg-white text-left transition disabled:opacity-40 disabled:cursor-not-allowed ${COLOR_CLS[a.color]} ${openAction === a.key ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -246,12 +258,39 @@ export default function OpportunityDetail() {
 
         {openAction && canAct && (
           <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200 space-y-3">
+            {openAction === 'quotation' && (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Package <span className="text-red-500">*</span>
+                </label>
+                <select value={actionForm.package_id}
+                        onChange={e => setActionForm(f => ({...f, package_id: e.target.value}))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white">
+                  <option value="">— Select a package —</option>
+                  {packages.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.package_name} — ₹{Number(p.total_price_per_sqft || 0).toLocaleString('en-IN')}/sqft
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  The quotation will use this package as its base. Once the lead is created, Sales can
+                  fine-tune choices via <em>Customise Package</em>.
+                </p>
+              </div>
+            )}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Notes for the assignee</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                {openAction === 'quotation' ? 'Quotation notes (optional)' : 'Notes for the assignee'}
+              </label>
               <textarea rows={3} value={actionForm.description}
                         onChange={e => setActionForm(f => ({...f, description: e.target.value}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        placeholder="What should they focus on?"/>
+                        placeholder={
+                          openAction === 'quotation'
+                            ? 'Any inclusions, exclusions, discounts, timelines to highlight in the quote…'
+                            : 'What should they focus on?'
+                        }/>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -266,7 +305,7 @@ export default function OpportunityDetail() {
                 <button onClick={() => submitAction(openAction)} disabled={creating}
                         className="inline-flex items-center gap-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md disabled:opacity-50">
                   {creating ? <Loader2 className="animate-spin" size={14}/> : <Save size={14}/>}
-                  Assign
+                  {openAction === 'quotation' ? 'Create Quotation Task' : 'Assign'}
                 </button>
               </div>
             </div>
@@ -290,11 +329,17 @@ export default function OpportunityDetail() {
                     <Icon size={16}/>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-mono text-orange-600">{a.action_number}</span>
                       <span className="font-medium text-gray-900">{a.title}</span>
                       <StatusPill status={a.status}/>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">→ {a.assigned_to_role.replace('_', ' ')}</span>
+                      {a.package_name && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-medium">
+                          📦 {a.package_name}
+                          {a.package_rate && <span className="ml-1 opacity-75">₹{Number(a.package_rate).toLocaleString('en-IN')}/sqft</span>}
+                        </span>
+                      )}
                     </div>
                     {a.description && <div className="text-sm text-gray-600 mt-1">{a.description}</div>}
                     {a.outcome && <div className="text-sm text-emerald-700 mt-1 italic">Outcome: {a.outcome}</div>}

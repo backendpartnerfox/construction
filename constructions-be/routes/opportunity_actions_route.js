@@ -16,6 +16,8 @@ const SELECT_FIELDS = `
   e.primary_phone,
   e.city AS enquiry_city,
   e.project_type,
+  pkg.package_name,
+  pkg.total_price_per_sqft AS package_rate,
   assignee.first_name || ' ' || assignee.last_name AS assigned_to_name,
   assignee.username AS assigned_to_username,
   creator.first_name || ' ' || creator.last_name AS created_by_name
@@ -23,7 +25,8 @@ const SELECT_FIELDS = `
 
 const BASE_FROM = `
   FROM opportunity_actions oa
-  LEFT JOIN enquiries e   ON oa.enquiry_id = e.enquiry_id
+  LEFT JOIN enquiries e    ON oa.enquiry_id = e.enquiry_id
+  LEFT JOIN packages pkg   ON oa.package_id = pkg.id
   LEFT JOIN users assignee ON oa.assigned_to_user_id = assignee.id
   LEFT JOIN users creator  ON oa.created_by = creator.id
 `;
@@ -149,12 +152,18 @@ router.post('/', async (req, res) => {
     const yy = new Date().getFullYear().toString().slice(-2);
     const actionNumber = d.action_number || `ACT-${yy}-${String(seq).padStart(3, '0')}`;
 
+    // Quotation must have a package. Other action types may pass one too
+    // (e.g. Technical Discussion about a specific package) but it's optional.
+    if (d.action_type === 'quotation' && !d.package_id) {
+      return res.status(400).json({ error: 'package_id is required for a Quotation action' });
+    }
+
     const r = await req.db.query(
       `INSERT INTO opportunity_actions (
          action_number, enquiry_id, action_type,
          assigned_to_role, assigned_to_user_id,
-         status, title, description, scheduled_at, created_by
-       ) VALUES ($1,$2,$3,$4,$5,COALESCE($6,'Pending'),$7,$8,$9,$10)
+         status, title, description, scheduled_at, created_by, package_id
+       ) VALUES ($1,$2,$3,$4,$5,COALESCE($6,'Pending'),$7,$8,$9,$10,$11)
        RETURNING *`,
       [
         actionNumber,
@@ -167,6 +176,7 @@ router.post('/', async (req, res) => {
         d.description || null,
         d.scheduled_at || null,
         req.user?.id || null,
+        d.package_id || null,
       ]
     );
     res.status(201).json({ success: true, data: r.rows[0] });
@@ -227,12 +237,14 @@ router.put('/:id', async (req, res) => {
          description         = COALESCE($6, description),
          outcome             = COALESCE($7, outcome),
          scheduled_at        = COALESCE($8, scheduled_at),
+         package_id          = COALESCE($9, package_id),
          updated_at          = CURRENT_TIMESTAMP
-       WHERE action_id = $9
+       WHERE action_id = $10
        RETURNING *`,
       [
         d.action_type, d.assigned_to_role, d.assigned_to_user_id,
         d.status, d.title, d.description, d.outcome, d.scheduled_at,
+        d.package_id,
         req.params.id,
       ]
     );
