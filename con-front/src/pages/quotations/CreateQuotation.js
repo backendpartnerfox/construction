@@ -25,7 +25,15 @@ const emptyFloor = (fn = 0) => ({
   units_count: 1, area_sqft: '', area_category: 'built_up', rate_per_sqft: '',
 });
 
-const CreateQuotation = () => {
+// Props (all optional) so the same page can be reused as an embedded builder:
+//   embedded         — true when rendered inside another page; skips the outer
+//                       page chrome and doesn't navigate on save.
+//   enquiryId        — link the quotation to this enquiry (persisted via new
+//                       enquiry_id column on client_quotations).
+//   defaultPackageId — pre-select this package on mount.
+//   onSaved(quote)   — called after a successful save when embedded; parent
+//                       decides what to do next (close modal, refresh, etc.).
+const CreateQuotation = ({ embedded = false, enquiryId = null, defaultPackageId = null, onSaved = null } = {}) => {
   const navigate = useNavigate();
 
   // Reference data
@@ -37,7 +45,7 @@ const CreateQuotation = () => {
 
   // Form state
   const [clientId, setClientId]           = useState('');
-  const [packageId, setPackageId]         = useState('');
+  const [packageId, setPackageId]         = useState(defaultPackageId ? String(defaultPackageId) : '');
   const [projectTitle, setProjectTitle]   = useState('');
   const [quotationDate, setQuotationDate] = useState(new Date().toISOString().slice(0, 10));
   const [validUntil, setValidUntil]       = useState(() => {
@@ -170,16 +178,21 @@ const CreateQuotation = () => {
       const res = await api.post('/quotations', {
         ...payload,
         client_id: clientId ? Number(clientId) : null,
+        enquiry_id: enquiryId ? Number(enquiryId) : null,
         project_title: projectTitle || null,
         quotation_date: quotationDate,
         valid_until: validUntil,
       });
       toast.success(`Saved: ${res.data.quotation_number}`);
-      setSavedQuotation({
+      const saved = {
         id: res.data.client_quotation_id,
         number: res.data.quotation_number,
         final_cost: res.data.breakup?.final_cost,
-      });
+      };
+      setSavedQuotation(saved);
+      // In embedded mode, notify the parent (which typically closes the panel
+      // and refreshes its own state). Parent decides what to do next.
+      if (onSaved) onSaved(saved);
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.error || 'Failed to save quotation');
@@ -200,18 +213,21 @@ const CreateQuotation = () => {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-2">
-          <ArrowLeft size={14} /> Back
-        </button>
-        <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
-          <FileText size={16} /> Quotations
+    <div className={embedded ? '' : 'p-6 max-w-7xl mx-auto'}>
+      {/* Header — only when rendered as its own page. Embedded parents
+          (like the Opportunity detail page) supply their own heading. */}
+      {!embedded && (
+        <div className="mb-6">
+          <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-2">
+            <ArrowLeft size={14} /> Back
+          </button>
+          <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
+            <FileText size={16} /> Quotations
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Create Quotation</h1>
+          <p className="text-sm text-gray-600 mt-1">Floor-by-floor breakup with add-ons and design fees. Preview updates as you type.</p>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Create Quotation</h1>
-        <p className="text-sm text-gray-600 mt-1">Floor-by-floor breakup with add-ons and design fees. Preview updates as you type.</p>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column: form */}

@@ -8,6 +8,7 @@ import {
   Video, X,
 } from 'lucide-react';
 import { useAuth } from '../../../utils/AuthContext';
+import CreateQuotation from '../../quotations/CreateQuotation';
 
 const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:9000'}/api`;
 
@@ -300,41 +301,49 @@ export default function OpportunityDetail() {
           ))}
         </div>
 
-        {openAction && canAct && (
+        {/* Quotation action gets the full embedded CreateQuotation form so
+            Sales fills floor breakup, add-ons, live preview inline. On save
+            we also log an opportunity_action for traceability. */}
+        {openAction === 'quotation' && canAct && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-medium text-gray-700">📄 Build Quotation for this Opportunity</div>
+              <button type="button" onClick={() => setOpenAction(null)}
+                      className="text-xs text-gray-500 hover:text-gray-800">Cancel</button>
+            </div>
+            <CreateQuotation
+              embedded
+              enquiryId={Number(id)}
+              defaultPackageId={enq?.package_id || null}
+              onSaved={async (saved) => {
+                try {
+                  // Log the action so it appears in the Action History
+                  await axios.post(`${API_BASE_URL}/opportunity_actions`, {
+                    enquiry_id: Number(id),
+                    action_type: 'quotation',
+                    package_id: enq?.package_id || null,
+                    description: `Quotation ${saved.number} created (₹${Number(saved.final_cost || 0).toLocaleString('en-IN')})`,
+                    status: 'Completed',
+                  });
+                } catch (err) {
+                  console.warn('Failed to log opportunity_action for quotation:', err.message);
+                }
+                setOpenAction(null);
+                load();
+              }}
+            />
+          </div>
+        )}
+
+        {/* Non-quotation actions still get the simple notes/schedule form */}
+        {openAction && openAction !== 'quotation' && canAct && (
           <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200 space-y-3">
-            {openAction === 'quotation' && (
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Package <span className="text-red-500">*</span>
-                </label>
-                <select value={actionForm.package_id}
-                        onChange={e => setActionForm(f => ({...f, package_id: e.target.value}))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white">
-                  <option value="">— Select a package —</option>
-                  {packages.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.package_name} — ₹{Number(p.total_price_per_sqft || 0).toLocaleString('en-IN')}/sqft
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1 text-xs text-gray-500">
-                  The quotation will use this package as its base. Once the lead is created, Sales can
-                  fine-tune choices via <em>Customise Package</em>.
-                </p>
-              </div>
-            )}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                {openAction === 'quotation' ? 'Quotation notes (optional)' : 'Notes for the assignee'}
-              </label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Notes for the assignee</label>
               <textarea rows={3} value={actionForm.description}
                         onChange={e => setActionForm(f => ({...f, description: e.target.value}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        placeholder={
-                          openAction === 'quotation'
-                            ? 'Any inclusions, exclusions, discounts, timelines to highlight in the quote…'
-                            : 'What should they focus on?'
-                        }/>
+                        placeholder="What should they focus on?"/>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -348,8 +357,7 @@ export default function OpportunityDetail() {
                         className="px-4 py-2 border border-gray-300 rounded-md text-sm">Cancel</button>
                 <button onClick={() => submitAction(openAction)} disabled={creating}
                         className="inline-flex items-center gap-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md disabled:opacity-50">
-                  {creating ? <Loader2 className="animate-spin" size={14}/> : <Save size={14}/>}
-                  {openAction === 'quotation' ? 'Create Quotation Task' : 'Assign'}
+                  {creating ? <Loader2 className="animate-spin" size={14}/> : <Save size={14}/>} Assign
                 </button>
               </div>
             </div>
