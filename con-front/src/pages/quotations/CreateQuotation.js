@@ -159,14 +159,17 @@ const CreateQuotation = () => {
   };
 
   const handleSave = async () => {
-    if (!clientId)  return toast.error('Pick a client');
     if (!packageId) return toast.error('Pick a package');
     if (payload.floor_units.length === 0) return toast.error('Add at least one floor line');
 
     try {
+      // client_id/enquiry_id/lead_id are optional now — a quotation can be
+      // drafted before the client record exists. If the page was opened with
+      // any of them pre-selected we forward them; otherwise the backend saves
+      // the quotation unattached and it can be linked later.
       const res = await api.post('/quotations', {
         ...payload,
-        client_id: Number(clientId),
+        client_id: clientId ? Number(clientId) : null,
         project_title: projectTitle || null,
         quotation_date: quotationDate,
         valid_until: validUntil,
@@ -217,19 +220,7 @@ const CreateQuotation = () => {
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <h2 className="text-sm font-semibold text-gray-700 mb-3">Basics</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Client *</label>
-                <select value={clientId} onChange={e => setClientId(e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-                  <option value="">Select client…</option>
-                  {clients.map(c => (
-                    <option key={c.client_id} value={c.client_id}>
-                      {c.client_name}{c.email ? ` — ${c.email}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Package *</label>
                 <select value={packageId} onChange={e => setPackageId(e.target.value)}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">

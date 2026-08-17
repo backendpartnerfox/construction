@@ -877,7 +877,9 @@ router.post('/', async (req, res) => {
   const db = req.db;
   const body = req.body || {};
   if (!body.package_id) return res.status(400).json({ error: 'package_id required' });
-  if (!body.client_id)  return res.status(400).json({ error: 'client_id required' });
+  // client_id is no longer required — quotations can be drafted for an
+  // enquiry/lead before the client record exists. enquiry_id and lead_id
+  // are optional links persisted for traceability.
 
   try {
     const calc = await computeQuotation(db, body);
@@ -893,7 +895,7 @@ router.post('/', async (req, res) => {
     // We store our own totals in floor_units_total_amount / addons_total_amount / total_design_amount.
     const ins = await db.query(
       `INSERT INTO client_quotations
-        (client_id, client_quotation_number, quotation_date, valid_until,
+        (client_id, enquiry_id, lead_id, client_quotation_number, quotation_date, valid_until,
          project_title, package_type, package_rate_per_sqft,
          habitable_area, stilt_area, terrace_area, built_up_area,
          special_features_amount,
@@ -901,12 +903,13 @@ router.post('/', async (req, res) => {
          architectural_fee_amount, other_design_fee_amount, total_design_amount,
          addons_total_amount, floor_units_total_amount,
          status, quotation_type, version_number, is_current_version)
-       VALUES ($1, $2, COALESCE($3::date, CURRENT_DATE), COALESCE($4::date, CURRENT_DATE + INTERVAL '30 days'),
-               $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19,
+       VALUES ($1, $2, $3, $4, COALESCE($5::date, CURRENT_DATE), COALESCE($6::date, CURRENT_DATE + INTERVAL '30 days'),
+               $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21,
                'Draft', 'Standard', 1, TRUE)
        RETURNING client_quotation_id`,
       [
-        body.client_id, quotationNumber,
+        body.client_id || null, body.enquiry_id || null, body.lead_id || null,
+        quotationNumber,
         body.quotation_date || null, body.valid_until || null,
         body.project_title || null, calc.package.name, calc.package.rate_per_sqft,
         calc.areas.built_up, calc.areas.stilt, calc.areas.terrace, calc.areas.total_built_up,
