@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, MessageCircle, Phone, Mail, MapPin, User, Building2,
-  Calendar, Target, ExternalLink,
+  Calendar, Target, ExternalLink, UserPlus, CheckCircle2,
 } from 'lucide-react';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
@@ -30,14 +30,25 @@ const EnquiryDetail = () => {
     })();
   }, [id]);
 
-  const convertToLead = async () => {
-    if (!window.confirm(`Convert this enquiry into a lead?`)) return;
+  const markOpportunity = async () => {
+    if (!window.confirm(`Mark this enquiry as an Opportunity? It becomes visible to Sales.`)) return;
     try {
-      const r = await api.post(`/enquiries/${id}/convert-to-lead`);
-      toast.success(`Lead created`);
-      // navigate to the created lead if we know the id
-      if (r.data.lead_id) navigate(`/crm/leads/${r.data.lead_id}`);
-    } catch (err) { toast.error(err.response?.data?.error || 'Convert failed'); }
+      await api.post(`/enquiries/${id}/mark-opportunity`);
+      toast.success('Marked as Opportunity');
+      // reload so the badge/button flips
+      const r = await api.get(`/enquiries/${id}`);
+      setQ(Array.isArray(r.data) ? r.data[0] : (r.data.data || r.data));
+    } catch (err) { toast.error(err.response?.data?.error || 'Failed to mark'); }
+  };
+
+  const unmarkOpportunity = async () => {
+    if (!window.confirm(`Remove this from Opportunities?`)) return;
+    try {
+      await api.post(`/enquiries/${id}/unmark-opportunity`);
+      toast.success('Removed from Opportunities');
+      const r = await api.get(`/enquiries/${id}`);
+      setQ(Array.isArray(r.data) ? r.data[0] : (r.data.data || r.data));
+    } catch (err) { toast.error(err.response?.data?.error || 'Failed to unmark'); }
   };
 
   if (loading) return <div className="p-6 text-gray-500">Loading…</div>;
@@ -61,10 +72,27 @@ const EnquiryDetail = () => {
               {q.company_name && <span className="text-gray-500"> · {q.company_name}</span>}
             </p>
           </div>
-          <button onClick={convertToLead}
-                  className="inline-flex items-center gap-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-md">
-            <Target size={14} /> Convert to Lead
-          </button>
+          {q.is_opportunity ? (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 px-3 py-2 bg-purple-100 text-purple-800 text-sm font-medium rounded-md">
+                <CheckCircle2 size={14}/> Marked as Opportunity
+              </span>
+              <button onClick={() => navigate(`/crm/opportunities/${id}`)}
+                      className="inline-flex items-center gap-1 px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md">
+                <ExternalLink size={14}/> Open Opportunity
+              </button>
+              <button onClick={unmarkOpportunity}
+                      title="Remove from Opportunities"
+                      className="p-2 text-gray-400 hover:text-red-600 border border-gray-200 rounded-md">
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button onClick={markOpportunity}
+                    className="inline-flex items-center gap-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md">
+              <UserPlus size={14} /> Convert to Opportunity
+            </button>
+          )}
         </div>
       </div>
 
