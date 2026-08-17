@@ -590,6 +590,37 @@ router.post('/:id/mark-opportunity', async (req, res) => {
   }
 });
 
+// PATCH /enquiries/:id/plot — update plot dimensions / area / floor config only
+router.patch('/:id/plot', async (req, res) => {
+  const {
+    plot_length,
+    plot_width,
+    plot_dimensions_unit,
+    plot_area_sqyards,
+    floor_configuration,
+  } = req.body || {};
+  try {
+    const r = await req.db.query(
+      `UPDATE enquiries
+          SET plot_length           = COALESCE($1, plot_length),
+              plot_width            = COALESCE($2, plot_width),
+              plot_dimensions_unit  = COALESCE($3, plot_dimensions_unit),
+              plot_area_sqyards     = COALESCE($4, plot_area_sqyards),
+              floor_configuration   = COALESCE($5, floor_configuration),
+              updated_at            = CURRENT_TIMESTAMP
+        WHERE enquiry_id = $6
+        RETURNING enquiry_id, plot_length, plot_width, plot_dimensions_unit,
+                  plot_area_sqyards, floor_configuration`,
+      [plot_length, plot_width, plot_dimensions_unit, plot_area_sqyards, floor_configuration, req.params.id]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ success: false, error: 'Enquiry not found' });
+    res.json({ success: true, data: r.rows[0] });
+  } catch (err) {
+    console.error('[enquiries/:id/plot] ', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // POST /enquiries/:id/unmark-opportunity — un-flag
 router.post('/:id/unmark-opportunity', async (req, res) => {
   try {

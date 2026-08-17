@@ -82,6 +82,8 @@ import SupportTickets from './pages/crm/support/SupportTickets';
 import MeetingsCoordinate from './pages/crm/meetings/MeetingsCoordinate';
 import PackageCustomize from './pages/sales/packages/PackageCustomize';
 import SiteVisits from './pages/sales/site-visits/SiteVisits';
+import OpportunityDetail from './pages/crm/opportunities/OpportunityDetail';
+import ActionQueue from './pages/queues/ActionQueue';
 
 // Admin Modules - Placeholders (only remaining ones)
 import {
@@ -248,6 +250,42 @@ function App() {
               element={
                 <ProtectedRoute permission="site_visits.view">
                   <Layout><SiteVisits /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crm/opportunities/:id"
+              element={
+                <ProtectedRoute permission="opportunities.view">
+                  <Layout><OpportunityDetail /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pm/opportunities"
+              element={
+                <ProtectedRoute permission="opportunity_actions.view">
+                  <Layout>
+                    <ActionQueue
+                      title="PM · Opportunities Queue"
+                      subtitle="Site visits and technical discussions assigned to you"
+                      restrictActionTypes={['site_visit', 'technical_discussion']}
+                    />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/designer/clarifications"
+              element={
+                <ProtectedRoute permission="opportunity_actions.view">
+                  <Layout>
+                    <ActionQueue
+                      title="Designer · Clarifications"
+                      subtitle="Clarifications assigned to you"
+                      restrictActionTypes={['clarification']}
+                    />
+                  </Layout>
                 </ProtectedRoute>
               }
             />

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Target, Search, Loader2, Phone, Mail, MapPin, IndianRupee, User, X } from 'lucide-react';
+import { Target, Search, Loader2, Phone, Mail, MapPin, IndianRupee, User, X, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../../utils/AuthContext';
 
 const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:9000'}/api`;
@@ -10,6 +11,7 @@ const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:9000'
 // this list; Sales typically converts to a lead from here (existing
 // enquiry->lead flow still applies).
 export default function OpportunitiesList() {
+  const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const canEdit = hasPermission('opportunities.edit');
 
@@ -130,15 +132,24 @@ export default function OpportunitiesList() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {canEdit && (
+                    <div className="flex items-center gap-2 justify-end">
                       <button
-                        onClick={() => unmark(r.enquiry_id, r.contact_person_name || 'this enquiry')}
-                        title="Remove from opportunities"
-                        className="inline-flex items-center gap-1 text-gray-400 hover:text-red-600 text-xs"
+                        onClick={() => navigate(`/crm/opportunities/${r.enquiry_id}`)}
+                        title="Open — plot info + actions"
+                        className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 rounded"
                       >
-                        <X size={14}/>
+                        Open <ArrowRight size={12}/>
                       </button>
-                    )}
+                      {canEdit && (
+                        <button
+                          onClick={() => unmark(r.enquiry_id, r.contact_person_name || 'this enquiry')}
+                          title="Remove from opportunities"
+                          className="inline-flex items-center gap-1 text-gray-400 hover:text-red-600 text-xs"
+                        >
+                          <X size={14}/>
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -17,7 +17,8 @@ import {
   Package,
   UserCheck,
   UserPlus,
-  FileText
+  FileText,
+  Inbox
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -47,6 +48,11 @@ const Layout = ({ children }) => {
     { id: 'support',       label: 'Support',         icon: FileText,   path: '/crm/support',              perm: 'support.view' },
     { id: 'meetings',      label: 'Meetings',        icon: Users,      path: '/crm/meetings',             perm: 'meetings.view' },
     { id: 'site-visits',   label: 'Site Visits',     icon: Target,     path: '/sales/site-visits',        perm: 'site_visits.view' },
+
+    // Assignee queues — visible to whoever holds opportunity_actions.view.
+    // Both PM and Designer see the link but the queue filters by their role.
+    { id: 'pm-queue',      label: 'PM Opportunities',    icon: Inbox,  path: '/pm/opportunities',        role: 'project_manager' },
+    { id: 'designer-queue',label: 'Clarifications',      icon: Inbox,  path: '/designer/clarifications', role: 'designer' },
 
     // Other roles
     { id: 'sales',         label: 'Sales',           icon: TrendingUp, path: '/sales',                    perm: 'crm.view' },
