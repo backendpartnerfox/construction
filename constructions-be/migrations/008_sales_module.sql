@@ -64,10 +64,11 @@ SELECT r.id, p.id
   JOIN permissions p ON p.name = pairs.perm_name
 ON CONFLICT DO NOTHING;
 
--- CRM + Project Manager get site_visits view too (they coordinate visits sometimes)
+-- CRM + Manager + Project Manager + Execution Engineer get site_visits too
+-- (they coordinate / attend visits).
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
-  FROM (VALUES ('crm'), ('project_manager'), ('execution_engineer')) AS t(role_name)
+  FROM (VALUES ('crm'), ('manager'), ('project_manager'), ('execution_engineer')) AS t(role_name)
   JOIN roles r ON r.name = t.role_name
   CROSS JOIN permissions p
  WHERE p.name IN ('site_visits.view','site_visits.edit')
