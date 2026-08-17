@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import {
   ArrowLeft, Loader2, Save, Target, MapPin, Phone, Mail, Building2,
   Calendar, FileText, Users, MessageCircle, CheckCircle2, Clock,
+  Video, X,
 } from 'lucide-react';
 import { useAuth } from '../../../utils/AuthContext';
 
@@ -39,10 +40,15 @@ export default function OpportunityDetail() {
   const { hasPermission } = useAuth();
   const canAct = hasPermission('opportunity_actions.edit');
 
+  const canMeet = hasPermission('meetings.edit');
   const [enq, setEnq] = useState(null);
   const [actions, setActions] = useState([]);
+  const [meetings, setMeetings] = useState([]);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [meetingForm, setMeetingForm] = useState(null); // { kind: 'virtual' | 'inperson' } | null
+  const [meetingFields, setMeetingFields] = useState({ title: '', date: '', location: '', to_be_included: '' });
+  const [savingMeeting, setSavingMeeting] = useState(false);
   const [savingPlot, setSavingPlot] = useState(false);
   const [openAction, setOpenAction] = useState(null); // key of currently expanded action form
   const [actionForm, setActionForm] = useState({ description: '', scheduled_at: '', package_id: '' });
@@ -55,10 +61,13 @@ export default function OpportunityDetail() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [eRes, aRes, pRes] = await Promise.all([
+      // Meetings fetch is optional — some roles won't have meetings.view. If it
+      // 403s we swallow and show 'no permission' state instead of failing the page.
+      const [eRes, aRes, pRes, mRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/enquiries/${id}`),
         axios.get(`${API_BASE_URL}/opportunity_actions/enquiry/${id}`),
         axios.get(`${API_BASE_URL}/packages`),
+        axios.get(`${API_BASE_URL}/meetings/entity/enquiry/${id}`).catch(() => ({ data: { data: [] } })),
       ]);
       const e = eRes.data?.data || eRes.data;
       setEnq(e);
@@ -71,6 +80,7 @@ export default function OpportunityDetail() {
       });
       setActions(aRes.data?.data || []);
       setPackages(pRes.data?.data || pRes.data || []);
+      setMeetings(mRes.data?.data || []);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to load opportunity');
     } finally {
@@ -130,6 +140,40 @@ export default function OpportunityDetail() {
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create action');
     } finally { setCreating(false); }
+  };
+
+  const openMeetingForm = (kind) => {
+    setMeetingForm({ kind });
+    setMeetingFields({
+      title: kind === 'virtual' ? 'Virtual meet with client' : 'Site / office meeting',
+      date: '',
+      location: kind === 'virtual' ? 'Google Meet / Zoom link TBD' : '',
+      to_be_included: '',
+    });
+  };
+
+  const scheduleMeeting = async (e) => {
+    e.preventDefault();
+    if (!meetingForm) return;
+    if (!meetingFields.date) { toast.error('Please pick a date/time'); return; }
+    setSavingMeeting(true);
+    try {
+      await axios.post(`${API_BASE_URL}/meetings`, {
+        type_of_meeting:      meetingForm.kind === 'virtual' ? 'Virtual Meet' : 'In-Person Meeting',
+        title:                meetingFields.title,
+        date:                 meetingFields.date,
+        location:             meetingFields.location || null,
+        to_be_included:       meetingFields.to_be_included || null,
+        related_entity_type:  'enquiry',
+        related_entity_id:    Number(id),
+        status:               'Scheduled',
+      });
+      toast.success('Meeting scheduled — visible to CRM, Sales & Opportunity');
+      setMeetingForm(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to schedule meeting');
+    } finally { setSavingMeeting(false); }
   };
 
   if (loading) {
@@ -310,6 +354,107 @@ export default function OpportunityDetail() {
               </div>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Meetings for this opportunity — Designer can schedule Virtual Meet
+          or In-Person Meeting; visible to CRM/Sales/PM/Admin via meetings.view. */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Calendar size={18}/> Meetings ({meetings.length})
+          </h2>
+          {canMeet && (
+            <div className="flex gap-2">
+              <button onClick={() => openMeetingForm('virtual')}
+                      className="inline-flex items-center gap-1 px-3 py-2 border-2 border-sky-300 text-sky-700 hover:bg-sky-50 text-sm rounded-md">
+                <Video size={14}/> Schedule Virtual Meet
+              </button>
+              <button onClick={() => openMeetingForm('inperson')}
+                      className="inline-flex items-center gap-1 px-3 py-2 border-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-sm rounded-md">
+                <MapPin size={14}/> Schedule Meeting
+              </button>
+            </div>
+          )}
+        </div>
+
+        {meetingForm && (
+          <form onSubmit={scheduleMeeting} className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-md space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-gray-700">
+                {meetingForm.kind === 'virtual' ? '🎥 Virtual Meet' : '📍 In-Person Meeting'}
+              </div>
+              <button type="button" onClick={() => setMeetingForm(null)} className="text-gray-400 hover:text-gray-600"><X size={16}/></button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                <input type="text" value={meetingFields.title}
+                       onChange={e => setMeetingFields(f => ({...f, title: e.target.value}))}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"/>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">When *</label>
+                <input type="datetime-local" required value={meetingFields.date}
+                       onChange={e => setMeetingFields(f => ({...f, date: e.target.value}))}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"/>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                {meetingForm.kind === 'virtual' ? 'Meeting link / platform' : 'Location'}
+              </label>
+              <input type="text" value={meetingFields.location}
+                     onChange={e => setMeetingFields(f => ({...f, location: e.target.value}))}
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                     placeholder={meetingForm.kind === 'virtual' ? 'https://meet.google.com/…' : 'Site address or office'}/>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Attendees</label>
+              <input type="text" value={meetingFields.to_be_included}
+                     onChange={e => setMeetingFields(f => ({...f, to_be_included: e.target.value}))}
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                     placeholder="Client name, Sales owner, PM…"/>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setMeetingForm(null)}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-sm">Cancel</button>
+              <button type="submit" disabled={savingMeeting}
+                      className="inline-flex items-center gap-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md disabled:opacity-50">
+                {savingMeeting ? <Loader2 className="animate-spin" size={14}/> : <Save size={14}/>} Schedule
+              </button>
+            </div>
+          </form>
+        )}
+
+        {meetings.length === 0 ? (
+          <div className="text-sm text-gray-500 italic">No meetings scheduled yet for this opportunity.</div>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {meetings.map(m => {
+              const isVirtual = (m.type_of_meeting || '').toLowerCase().includes('virtual');
+              const Icon = isVirtual ? Video : MapPin;
+              const iconCls = isVirtual ? 'text-sky-600 border-sky-200 bg-sky-50' : 'text-emerald-600 border-emerald-200 bg-emerald-50';
+              return (
+                <li key={m.id} className="py-3 flex items-start gap-3">
+                  <div className={`p-2 rounded-md border ${iconCls}`}><Icon size={16}/></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-gray-900">{m.title || m.type_of_meeting || 'Meeting'}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">{m.type_of_meeting}</span>
+                      {m.status && <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">{m.status}</span>}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-3 text-xs text-gray-600">
+                      {m.date && <span className="inline-flex items-center gap-1"><Clock size={11}/>{new Date(m.date).toLocaleString()}</span>}
+                      {m.location && <span className="inline-flex items-center gap-1"><MapPin size={11}/>{m.location}</span>}
+                      {m.to_be_included && <span className="inline-flex items-center gap-1"><Users size={11}/>{m.to_be_included}</span>}
+                    </div>
+                    {m.notes && <div className="mt-1 text-xs text-gray-500 italic">{m.notes}</div>}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
 
