@@ -209,9 +209,22 @@ router.post('/', async (req, res) => {
   console.log('[Enquiries] Creating new enquiry:', { contact_person_name, primary_phone });
 
   if (!contact_person_name || !primary_phone) {
-    return res.status(400).json({ 
+    return res.status(400).json({
       success: false,
-      error: "Contact person name and primary phone are required" 
+      error: "Contact person name and primary phone are required"
+    });
+  }
+  // Phone / WhatsApp must be exactly 10 digits (defense in depth — FE also validates)
+  if (!/^\d{10}$/.test(String(primary_phone))) {
+    return res.status(400).json({
+      success: false,
+      error: "primary_phone must be exactly 10 digits"
+    });
+  }
+  if (req.body.whatsapp_number && !/^\d{10}$/.test(String(req.body.whatsapp_number))) {
+    return res.status(400).json({
+      success: false,
+      error: "whatsapp_number must be exactly 10 digits when provided"
     });
   }
 
@@ -383,9 +396,17 @@ router.put('/:id', async (req, res) => {
     enquiry_notes
   } = req.body;
 
+  // If phone/whatsapp are being set, enforce exactly 10 digits.
+  if (primary_phone && !/^\d{10}$/.test(String(primary_phone))) {
+    return res.status(400).json({ success: false, error: "primary_phone must be exactly 10 digits" });
+  }
+  if (whatsapp_number && !/^\d{10}$/.test(String(whatsapp_number))) {
+    return res.status(400).json({ success: false, error: "whatsapp_number must be exactly 10 digits when provided" });
+  }
+
   try {
     const updateQuery = `
-      UPDATE enquiries 
+      UPDATE enquiries
       SET contact_person_name = $1, contact_surname = $2, company_name = $3, 
           primary_phone = $4, email = $5, whatsapp_number = $6, city = $7, 
           state = $8, project_type = $9, construction_type = $10, 

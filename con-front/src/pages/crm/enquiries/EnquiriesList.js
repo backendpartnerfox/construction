@@ -74,6 +74,14 @@ const EnquiriesList = () => {
       toast.error('Contact name and phone are required');
       return;
     }
+    if (!/^\d{10}$/.test(form.primary_phone)) {
+      toast.error('Phone must be exactly 10 digits');
+      return;
+    }
+    if (form.whatsapp_number && !/^\d{10}$/.test(form.whatsapp_number)) {
+      toast.error('WhatsApp number must be exactly 10 digits');
+      return;
+    }
     setSaving(true);
     try {
       await api.post('/enquiries', {
@@ -248,14 +256,26 @@ const EnquiriesList = () => {
                          className="w-full border border-gray-300 rounded-md px-3 py-2" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Phone *</label>
-                  <input value={form.primary_phone} onChange={e => setField('primary_phone', e.target.value)}
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Phone * <span className="text-gray-400 font-normal">(10 digits)</span></label>
+                  <input value={form.primary_phone}
+                         onChange={e => setField('primary_phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                         type="tel" inputMode="numeric" maxLength={10} pattern="\d{10}"
+                         placeholder="9876543210"
                          required className="w-full border border-gray-300 rounded-md px-3 py-2" />
+                  {form.primary_phone && form.primary_phone.length !== 10 && (
+                    <p className="mt-1 text-xs text-red-600">{form.primary_phone.length}/10 digits</p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">WhatsApp</label>
-                  <input value={form.whatsapp_number} onChange={e => setField('whatsapp_number', e.target.value)}
+                  <label className="block text-xs font-medium text-gray-600 mb-1">WhatsApp <span className="text-gray-400 font-normal">(10 digits)</span></label>
+                  <input value={form.whatsapp_number}
+                         onChange={e => setField('whatsapp_number', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                         type="tel" inputMode="numeric" maxLength={10} pattern="\d{10}"
+                         placeholder="9876543210"
                          className="w-full border border-gray-300 rounded-md px-3 py-2" />
+                  {form.whatsapp_number && form.whatsapp_number.length !== 10 && (
+                    <p className="mt-1 text-xs text-red-600">{form.whatsapp_number.length}/10 digits</p>
+                  )}
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
