@@ -618,6 +618,7 @@ router.patch('/:id/plot', async (req, res) => {
     plot_width,
     plot_dimensions_unit,
     plot_area_sqyards,
+    stilt_area_sqft,
     floor_configuration,
   } = req.body || {};
   try {
@@ -627,12 +628,13 @@ router.patch('/:id/plot', async (req, res) => {
               plot_width            = COALESCE($2, plot_width),
               plot_dimensions_unit  = COALESCE($3, plot_dimensions_unit),
               plot_area_sqyards     = COALESCE($4, plot_area_sqyards),
-              floor_configuration   = COALESCE($5, floor_configuration),
+              stilt_area_sqft       = COALESCE($5, stilt_area_sqft),
+              floor_configuration   = COALESCE($6, floor_configuration),
               updated_at            = CURRENT_TIMESTAMP
-        WHERE enquiry_id = $6
+        WHERE enquiry_id = $7
         RETURNING enquiry_id, plot_length, plot_width, plot_dimensions_unit,
-                  plot_area_sqyards, floor_configuration`,
-      [plot_length, plot_width, plot_dimensions_unit, plot_area_sqyards, floor_configuration, req.params.id]
+                  plot_area_sqyards, stilt_area_sqft, floor_configuration`,
+      [plot_length, plot_width, plot_dimensions_unit, plot_area_sqyards, stilt_area_sqft, floor_configuration, req.params.id]
     );
     if (r.rows.length === 0) return res.status(404).json({ success: false, error: 'Enquiry not found' });
     res.json({ success: true, data: r.rows[0] });

@@ -56,7 +56,7 @@ export default function OpportunityDetail() {
   const [creating, setCreating] = useState(false);
   const [plot, setPlot] = useState({
     plot_length: '', plot_width: '', plot_dimensions_unit: 'ft',
-    plot_area_sqyards: '', floor_configuration: '',
+    plot_area_sqyards: '', stilt_area_sqft: '', floor_configuration: '',
   });
 
   const load = useCallback(async () => {
@@ -77,6 +77,7 @@ export default function OpportunityDetail() {
         plot_width: e?.plot_width ?? '',
         plot_dimensions_unit: e?.plot_dimensions_unit || 'ft',
         plot_area_sqyards: e?.plot_area_sqyards ?? '',
+        stilt_area_sqft: e?.stilt_area_sqft ?? '',
         floor_configuration: e?.floor_configuration || '',
       });
       setActions(aRes.data?.data || []);
@@ -91,14 +92,26 @@ export default function OpportunityDetail() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Auto-derive sq yards from L × W when both are set (1 sqft ≈ 1/9 sqyd)
-  const derivedSqyards = () => {
+  // Auto-recompute derived plot values whenever L / W / unit change.
+  // - Area (sqyd): unit=ft -> sqft/9; unit=m -> (m² * 10.7639)/9 ≈ m² * 1.196.
+  // - Stilt (sqft): 70% of the plot footprint in sqft (standard setback rule).
+  // Both stay editable — user overrides are respected on next change of L/W.
+  useEffect(() => {
     const L = parseFloat(plot.plot_length);
     const W = parseFloat(plot.plot_width);
-    if (!L || !W) return '';
-    const sqft = L * W;
-    return (sqft / 9).toFixed(2);
-  };
+    if (!L || !W) return;
+    const sqft = plot.plot_dimensions_unit === 'm' ? L * W * 10.7639 : L * W;
+    const sqyd = sqft / 9;
+    setPlot(p => ({
+      ...p,
+      plot_area_sqyards: sqyd.toFixed(2),
+      stilt_area_sqft: (sqft * 0.7).toFixed(2),
+    }));
+    // Intentionally omit plot.plot_area_sqyards / stilt_area_sqft from deps —
+    // we only want this to fire when the *inputs* (L/W/unit) change, so user
+    // edits to the derived fields aren't immediately overwritten.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plot.plot_length, plot.plot_width, plot.plot_dimensions_unit]);
 
   const savePlot = async () => {
     setSavingPlot(true);
@@ -108,6 +121,7 @@ export default function OpportunityDetail() {
         plot_width: plot.plot_width ? Number(plot.plot_width) : null,
         plot_dimensions_unit: plot.plot_dimensions_unit || null,
         plot_area_sqyards: plot.plot_area_sqyards ? Number(plot.plot_area_sqyards) : null,
+        stilt_area_sqft: plot.stilt_area_sqft ? Number(plot.stilt_area_sqft) : null,
         floor_configuration: plot.floor_configuration || null,
       };
       await axios.patch(`${API_BASE_URL}/enquiries/${id}/plot`, payload);
@@ -227,7 +241,7 @@ export default function OpportunityDetail() {
             {savingPlot ? <Loader2 className="animate-spin" size={14}/> : <Save size={14}/>} Save Plot Info
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Plot Length</label>
             <input type="number" step="0.01" value={plot.plot_length}
@@ -250,18 +264,20 @@ export default function OpportunityDetail() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Area (sq. yards)</label>
-            <div className="flex gap-1">
-              <input type="number" step="0.01" value={plot.plot_area_sqyards}
-                     onChange={e => setPlot(p => ({...p, plot_area_sqyards: e.target.value}))}
-                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" placeholder="Auto"/>
-              {plot.plot_length && plot.plot_width && plot.plot_dimensions_unit === 'ft' && (
-                <button type="button" onClick={() => setPlot(p => ({...p, plot_area_sqyards: derivedSqyards()}))}
-                        title="Auto-fill from L × W" className="px-2 text-xs text-blue-600 hover:underline">
-                  = {derivedSqyards()}
-                </button>
-              )}
-            </div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Area (sq. yards) <span className="text-[10px] text-emerald-600">auto</span>
+            </label>
+            <input type="number" step="0.01" value={plot.plot_area_sqyards}
+                   onChange={e => setPlot(p => ({...p, plot_area_sqyards: e.target.value}))}
+                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-emerald-50" placeholder="Auto"/>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Stilt (sqft) <span className="text-[10px] text-emerald-600">auto 70%</span>
+            </label>
+            <input type="number" step="0.01" value={plot.stilt_area_sqft}
+                   onChange={e => setPlot(p => ({...p, stilt_area_sqft: e.target.value}))}
+                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-emerald-50" placeholder="Auto"/>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Floor Configuration</label>
@@ -273,6 +289,9 @@ export default function OpportunityDetail() {
             </select>
           </div>
         </div>
+        <p className="mt-2 text-xs text-gray-500">
+          Area and Stilt are computed from L × W when you enter them; both remain editable if you need to override.
+        </p>
       </div>
 
       {/* Actions */}
