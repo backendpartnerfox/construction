@@ -67,11 +67,16 @@ const CreateQuotation = ({ embedded = false, enquiryId = null, defaultPackageId 
   useEffect(() => {
     (async () => {
       try {
+        // Each ref-data fetch swallowed individually so a single 403 (e.g.
+        // Designer opening this form embedded and lacking clients.view)
+        // doesn't wipe out the whole page. Missing lists become [] and the
+        // affected dropdowns just render empty.
+        const empty = { data: [] };
         const [pRes, cRes, aRes, sRes] = await Promise.all([
-          api.get('/packages'),
-          api.get('/clients'),
-          api.get('/quotations/addons'),
-          api.get('/quotations/site-conditions'),
+          api.get('/packages').catch(() => empty),
+          api.get('/clients').catch(() => empty),
+          api.get('/quotations/addons').catch(() => empty),
+          api.get('/quotations/site-conditions').catch(() => empty),
         ]);
         setSiteCatalog(Array.isArray(sRes.data) ? sRes.data : []);
         // Prefill with standard answers so nothing is flagged by default

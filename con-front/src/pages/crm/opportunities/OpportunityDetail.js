@@ -21,11 +21,15 @@ const FLOOR_OPTIONS = [
 // Action-type -> icon + colour + one-line label. Buttons are grouped by
 // intended assignee so Sales can see at a glance what routing they're
 // triggering.
+// Each action declares the *creator* permission required to raise it (in
+// addition to opportunity_actions.edit which is the general gate).
+// Designer/PM shouldn't see Quotation because they can't fulfill it —
+// Sales/Admin builds the quote.
 const ACTIONS = [
-  { key: 'site_visit',           label: 'Site Visit',          desc: 'Assigned to Project Manager',    Icon: MapPin,        color: 'blue',    role: 'project_manager' },
-  { key: 'quotation',            label: 'Quotation',           desc: 'Prepare quotation',              Icon: FileText,      color: 'orange',  role: 'sales' },
-  { key: 'clarification',        label: 'Clarification',       desc: 'Assigned to Designer',           Icon: MessageCircle, color: 'purple',  role: 'designer' },
-  { key: 'technical_discussion', label: 'Technical Discussion',desc: 'Assigned to Project Manager',    Icon: Users,         color: 'teal',    role: 'project_manager' },
+  { key: 'site_visit',           label: 'Site Visit',          desc: 'Assigned to Project Manager', Icon: MapPin,        color: 'blue',    role: 'project_manager', perm: 'opportunity_actions.edit' },
+  { key: 'quotation',            label: 'Quotation',           desc: 'Prepare quotation',           Icon: FileText,      color: 'orange',  role: 'sales',           perm: 'quotations.edit' },
+  { key: 'clarification',        label: 'Clarification',       desc: 'Assigned to Designer',        Icon: MessageCircle, color: 'purple',  role: 'designer',        perm: 'opportunity_actions.edit' },
+  { key: 'technical_discussion', label: 'Technical Discussion',desc: 'Assigned to Project Manager', Icon: Users,         color: 'teal',    role: 'project_manager', perm: 'opportunity_actions.edit' },
 ];
 
 const COLOR_CLS = {
@@ -303,7 +307,7 @@ export default function OpportunityDetail() {
           <div className="text-sm text-gray-500 italic mb-4">You don't have permission to create actions.</div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {ACTIONS.map(a => (
+          {ACTIONS.filter(a => !a.perm || hasPermission(a.perm)).map(a => (
             <button
               key={a.key}
               disabled={!canAct}
