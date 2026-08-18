@@ -128,7 +128,7 @@ router.put('/:id', async (req, res) => {
          subject        = COALESCE($1, subject),
          description    = COALESCE($2, description),
          priority       = COALESCE($3, priority),
-         status         = COALESCE($4, status),
+         status         = COALESCE($4::text, status),
          category       = COALESCE($5, category),
          client_id      = COALESCE($6, client_id),
          enquiry_id     = COALESCE($7, enquiry_id),
@@ -138,7 +138,10 @@ router.put('/:id', async (req, res) => {
          contact_email  = COALESCE($11, contact_email),
          assigned_to    = COALESCE($12, assigned_to),
          resolution     = COALESCE($13, resolution),
-         resolved_at    = CASE WHEN $4 IN ('Resolved','Closed') AND resolved_at IS NULL
+         -- Cast $4 to text on both usages so Postgres agrees on a single
+         -- type. Without this you get 'inconsistent types deduced for
+         -- parameter $4'.
+         resolved_at    = CASE WHEN $4::text IN ('Resolved','Closed') AND resolved_at IS NULL
                                THEN CURRENT_TIMESTAMP ELSE resolved_at END,
          updated_at     = CURRENT_TIMESTAMP
        WHERE ticket_id = $14

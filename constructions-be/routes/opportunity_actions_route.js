@@ -204,13 +204,16 @@ router.patch('/:id/status', async (req, res) => {
     return res.status(400).json({ error: `status must be one of ${ALLOWED.join(', ')}` });
   }
   try {
+    // Cast $1 to text explicitly. Using an unqualified $1 in both a SET and
+    // a CASE WHEN $1 = 'Completed' comparison makes Postgres error with
+    // "inconsistent types deduced for parameter $1".
     const r = await req.db.query(
       `UPDATE opportunity_actions
-          SET status      = $1,
-              outcome     = COALESCE($2, outcome),
-              completed_at = CASE WHEN $1 = 'Completed' AND completed_at IS NULL
-                                   THEN CURRENT_TIMESTAMP ELSE completed_at END,
-              updated_at  = CURRENT_TIMESTAMP
+          SET status       = $1::text,
+              outcome      = COALESCE($2, outcome),
+              completed_at = CASE WHEN $1::text = 'Completed' AND completed_at IS NULL
+                                    THEN CURRENT_TIMESTAMP ELSE completed_at END,
+              updated_at   = CURRENT_TIMESTAMP
         WHERE action_id = $3
         RETURNING *`,
       [status, outcome || null, req.params.id]
