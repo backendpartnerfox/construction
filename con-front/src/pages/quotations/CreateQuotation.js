@@ -236,7 +236,24 @@ const CreateQuotation = ({ embedded = false, enquiryId = null, defaultPackageId 
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <h2 className="text-sm font-semibold text-gray-700 mb-3">Basics</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="md:col-span-2">
+              {/* Client picker: only on the standalone /quotations/create page.
+                  Embedded mode (from an Opportunity) uses enquiry_id instead
+                  since the client record may not exist yet. */}
+              {!embedded && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Client</label>
+                  <select value={clientId} onChange={e => setClientId(e.target.value)}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">Select client…</option>
+                    {clients.map(c => (
+                      <option key={c.client_id} value={c.client_id}>
+                        {c.client_name}{c.email ? ` — ${c.email}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className={embedded ? 'md:col-span-2' : ''}>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Package *</label>
                 <select value={packageId} onChange={e => setPackageId(e.target.value)}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
