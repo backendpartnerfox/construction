@@ -62,12 +62,14 @@ export default function OpportunityDetail() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // Meetings fetch is optional — some roles won't have meetings.view. If it
-      // 403s we swallow and show 'no permission' state instead of failing the page.
+      // Only the enquiry + actions fetches are hard requirements. Packages and
+      // meetings are gracefully-degrading — some roles (e.g. Designer) don't
+      // have packages.view / meetings.view. Wrapping them in .catch keeps the
+      // page functional and just leaves those dropdowns / sections empty.
       const [eRes, aRes, pRes, mRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/enquiries/${id}`),
         axios.get(`${API_BASE_URL}/opportunity_actions/enquiry/${id}`),
-        axios.get(`${API_BASE_URL}/packages`),
+        axios.get(`${API_BASE_URL}/packages`).catch(() => ({ data: [] })),
         axios.get(`${API_BASE_URL}/meetings/entity/enquiry/${id}`).catch(() => ({ data: { data: [] } })),
       ]);
       const e = eRes.data?.data || eRes.data;
