@@ -84,6 +84,8 @@ import PackageCustomize from './pages/sales/packages/PackageCustomize';
 import SiteVisits from './pages/sales/site-visits/SiteVisits';
 import OpportunityDetail from './pages/crm/opportunities/OpportunityDetail';
 import ActionQueue from './pages/queues/ActionQueue';
+import ProcurementPOs from './pages/procurement/PurchaseOrders';
+import ProcurementVendors from './pages/procurement/Vendors';
 
 // Admin Modules - Placeholders (only remaining ones)
 import {
@@ -286,6 +288,22 @@ function App() {
                       restrictActionTypes={['clarification']}
                     />
                   </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/procurement/purchase-orders"
+              element={
+                <ProtectedRoute permission="purchase_orders.view">
+                  <Layout><ProcurementPOs /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/procurement/vendors"
+              element={
+                <ProtectedRoute permission="vendors.view">
+                  <Layout><ProcurementVendors /></Layout>
                 </ProtectedRoute>
               }
             />

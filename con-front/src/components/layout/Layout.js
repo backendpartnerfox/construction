@@ -18,7 +18,9 @@ import {
   UserCheck,
   UserPlus,
   FileText,
-  Inbox
+  Inbox,
+  ShoppingCart,
+  Truck
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -53,6 +55,12 @@ const Layout = ({ children }) => {
     // Both PM and Designer see the link but the queue filters by their role.
     { id: 'pm-queue',      label: 'PM Opportunities',    icon: Inbox,  path: '/pm/opportunities',        role: 'project_manager' },
     { id: 'designer-queue',label: 'Clarifications',      icon: Inbox,  path: '/designer/clarifications', role: 'designer' },
+
+    // Procurement (Purchase Orders + Vendors directory). Perms auto-select
+    // who sees them — procurement/sourcing/dispatch/finance for POs; even more
+    // roles see Vendors since it's a read-only directory.
+    { id: 'purchase-orders', label: 'Purchase Orders', icon: ShoppingCart, path: '/procurement/purchase-orders', perm: 'purchase_orders.view' },
+    { id: 'vendors-dir',     label: 'Vendors',         icon: Truck,        path: '/procurement/vendors',         perm: 'vendors.view' },
 
     // Other roles
     { id: 'sales',         label: 'Sales',           icon: TrendingUp, path: '/sales',                    perm: 'crm.view' },
